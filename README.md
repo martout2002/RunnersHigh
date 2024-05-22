@@ -1,16 +1,31 @@
-# runners_high
+# RunnersHigh
+Full-stack Mobile application for a running applications
 
-A new Flutter project.
+**Goal of the project:** 
+TBC
 
-## Getting Started
+**Front End** 
+1. Flutter
 
-This project is a starting point for a Flutter application.
+**Back End** 
+1. Firebase
+   
+**Dependencies:**
+  * TBC
+ 
+    
+**The project should be able to:**
+  * TBC
+    
+**Additional features added:**
+  * TBC
 
-A few resources to get you started if this is your first Flutter project:
+**Creating Test Data:**
+  * TBC
+    
+**Brief Outline of Data:** 
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+TBC
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+
+    
