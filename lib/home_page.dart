@@ -11,6 +11,7 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(title: 'Home', onToggleTheme: onToggleTheme), // Use the custom AppBar
+      drawer: const NavDrawer(),
       body: const Center(
         child: Text('Successful!'),
       ),
