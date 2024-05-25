@@ -6,35 +6,41 @@ import './firebase_options.dart';
 import 'login_page.dart';
 import 'signup_page.dart';
 import 'home_page.dart';
+// import 'customAppBar.dart'; // Import the custom AppBar
 
-Future<void> main() async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
   await FirebaseAuth.instance.signOut(); // Sign out the user
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  bool _isDarkMode = false;
+
+  void _toggleTheme() {
+    setState(() {
+      _isDarkMode = !_isDarkMode;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.blue,
-          brightness: Brightness.light,
-        ),
-      ),
+      theme: _isDarkMode ? ThemeData.dark() : ThemeData.light(),
       initialRoute: '/login',
       routes: {
-        '/login': (context) => const LoginPage(),
-        '/signup': (context) => const SignUpPage(),
-        '/home': (context) => const HomePage(),
+        '/login': (context) => LoginPage(onToggleTheme: _toggleTheme),
+        '/signup': (context) => SignUpPage(onToggleTheme: _toggleTheme),
+        '/home': (context) => HomePage(onToggleTheme: _toggleTheme),
       },
     );
   }
