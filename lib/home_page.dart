@@ -1,26 +1,16 @@
-// home_page.dart
-
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
+import 'customAppBar.dart'; // Import the custom AppBar
 
 class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+  final VoidCallback onToggleTheme;
+
+  const HomePage({super.key, required this.onToggleTheme});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Home'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await FirebaseAuth.instance.signOut();
-              Navigator.pushReplacementNamed(context, '/login');
-            },
-          ),
-        ],
-      ),
+      appBar: CustomAppBar(title: 'Home', onToggleTheme: onToggleTheme), // Use the custom AppBar
       body: const Center(
         child: Text('Successful!'),
       ),

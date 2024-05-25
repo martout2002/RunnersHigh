@@ -1,11 +1,11 @@
-// signup_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-// import 'dart:async';
+import 'customAppBar.dart'; // Import the custom AppBar
 
 class SignUpPage extends StatefulWidget {
-  const SignUpPage({super.key});
+  final VoidCallback onToggleTheme;
+
+  const SignUpPage({super.key, required this.onToggleTheme});
 
   @override
   _SignUpPageState createState() => _SignUpPageState();
@@ -32,9 +32,7 @@ class _SignUpPageState extends State<SignUpPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Sign Up'),
-      ),
+      appBar: CustomAppBar(title: 'Sign Up', onToggleTheme: widget.onToggleTheme), // Use the custom AppBar
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
