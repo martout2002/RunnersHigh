@@ -17,17 +17,11 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for android - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return android;
       case TargetPlatform.iOS:
         return ios;
       case TargetPlatform.macOS:
@@ -73,4 +67,23 @@ class DefaultFirebaseOptions {
     storageBucket: 'runnershigh-8d162.appspot.com',
     measurementId: 'G-7SP4370J6P',
   );
+
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyCmg83kR00qQUwY5tufTT31GcvmLY07-Rg',
+    appId: '1:737325233804:web:adea360f405ba5e3c46da9',
+    messagingSenderId: '737325233804',
+    projectId: 'runnershigh-8d162',
+    authDomain: 'runnershigh-8d162.firebaseapp.com',
+    storageBucket: 'runnershigh-8d162.appspot.com',
+    measurementId: 'G-7SP4370J6P',
+  );
+
+  static const FirebaseOptions android = FirebaseOptions(
+    apiKey: 'AIzaSyASqKiw2HjbLLIzipG2ZKWEsdeCqU4DowI',
+    appId: '1:737325233804:android:8c846e6bbd2fdfb3c46da9',
+    messagingSenderId: '737325233804',
+    projectId: 'runnershigh-8d162',
+    storageBucket: 'runnershigh-8d162.appspot.com',
+  );
+
 }
