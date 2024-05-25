@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:async';
+import 'customAppBar.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -40,14 +41,18 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Login'),
-      ),
+      appBar: const CustomAppBar(title: 'Runners High'),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+             // Add the logo here
+            Image.asset(
+              'lib/images/runnerslogo.png',
+              height: 200, // Adjust the height as needed
+            ),
+            const SizedBox(height: 20),
             TextField(
               controller: _emailController,
               decoration: const InputDecoration(labelText: 'Email'),
