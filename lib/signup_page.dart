@@ -8,10 +8,10 @@ class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key, required this.onToggleTheme});
 
   @override
-  _SignUpPageState createState() => _SignUpPageState();
+  SignUpPageState createState() => SignUpPageState();
 }
 
-class _SignUpPageState extends State<SignUpPage> {
+class SignUpPageState extends State<SignUpPage> {
   late final TextEditingController _emailController;
   late final TextEditingController _passwordController;
   bool _isLoading = false;
@@ -91,10 +91,13 @@ class _SignUpPageState extends State<SignUpPage> {
     } catch (e) {
       print(e);
     } finally {
-      if (!mounted) return;
+      
       setState(() {
         _isLoading = false;
       });
+    }
+    if (!mounted) {
+        return;
     }
   }
 
@@ -118,7 +121,7 @@ class _SignUpPageState extends State<SignUpPage> {
             ),
             const SizedBox(height: 20),
             _isLoading
-                ? CircularProgressIndicator()
+                ? const CircularProgressIndicator()
                 : Column(
                     children: [
                       ElevatedButton(
