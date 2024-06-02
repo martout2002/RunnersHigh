@@ -89,8 +89,8 @@ class LoginPageState extends State<LoginPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Image.asset(
-                isDarkMode ? 'lib/images/runnerslogo_dark.png' : 'lib/images/runnerslogo_light.png',
-                height: 100,
+                isDarkMode ? 'lib/images/logo2dark.png' : 'lib/images/logo2.png',
+                height: 200,
               ),
               const SizedBox(height: 20),
               TextField(
