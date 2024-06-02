@@ -7,8 +7,7 @@ import 'signup_page.dart';
 import 'run_tracking_page.dart';
 import 'onboarding_page.dart';
 import 'firebase_options.dart';
-
-
+import 'package:google_fonts/google_fonts.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,7 +40,19 @@ class MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
-      theme: _isDarkMode ? ThemeData.dark() : ThemeData.light(),
+      theme: ThemeData(
+        brightness: _isDarkMode ? Brightness.dark : Brightness.light,
+        textTheme: GoogleFonts.readexProTextTheme(
+          Theme.of(context).textTheme,
+        ),
+      ),
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+        textTheme: GoogleFonts.readexProTextTheme(
+          Theme.of(context).textTheme,
+        ),
+      ),
+      themeMode: _isDarkMode ? ThemeMode.dark : ThemeMode.light,
       initialRoute: '/login',
       routes: {
         '/login': (context) => LoginPage(onToggleTheme: _toggleTheme),
