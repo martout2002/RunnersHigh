@@ -71,6 +71,8 @@ flutter:
     - lib/images/runnerslogo_dark.png
     - lib/images/runnerslogo_light.png
     - lib/images/meNshaun.png
+    - lib/images/logo2.png
+    - lib/images/logo2dark.png
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
