@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:runners_high/UserProfilePage.dart';
 // import 'package:runners_high/login_page.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -72,7 +73,11 @@ class NavDrawer extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.verified_user),
             title: const Text('Profile'),
-            onTap: () => {Navigator.of(context).pop()},
+            onTap: () => {Navigator.of(context).push(
+              MaterialPageRoute(
+              builder: (context) => UserProfilePage(),
+            ),
+          )},
           ),
           ListTile(
             leading: const Icon(Icons.settings),

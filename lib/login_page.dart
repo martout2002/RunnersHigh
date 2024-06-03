@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:runners_high/main.dart';
 
 class LoginPage extends StatefulWidget {
   final VoidCallback onToggleTheme;
@@ -15,12 +16,14 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   late final StreamSubscription<User?> _firebaseStreamEvents;
+  late final User? currentUser;
 
   @override
   void initState() {
     super.initState();
     _firebaseStreamEvents = FirebaseAuth.instance.authStateChanges().listen((User? user) {
       if (user != null) {
+        currentUser = user;
         Navigator.pushReplacementNamed(context, '/home');
       }
     });
@@ -40,6 +43,12 @@ class _LoginPageState extends State<LoginPage> {
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
+      Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (context) => MyApp(currentUser: currentUser),
+      ),
+    );
+      
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to sign in: $e')));

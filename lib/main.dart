@@ -7,6 +7,7 @@ import 'signup_page.dart';
 import 'run_tracking_page.dart';
 import 'onboarding_page.dart';
 import 'firebase_options.dart';
+import 'UserProfilePage.dart';
 
 
 
@@ -21,7 +22,7 @@ void main() async {
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+  const MyApp({super.key, User? currentUser});
 
   @override
   MyAppState createState() => MyAppState();
@@ -49,6 +50,7 @@ class MyAppState extends State<MyApp> {
         '/home': (context) => HomePage(onToggleTheme: _toggleTheme),
         '/run_tracking': (context) => RunTrackingPage(onToggleTheme: _toggleTheme),
         '/onboarding': (context) => const OnboardingPage(),
+        '/profile': (context) =>  UserProfilePage(),
       },
     );
   }
