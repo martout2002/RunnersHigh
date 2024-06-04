@@ -43,6 +43,7 @@ class SignUpPageState extends State<SignUpPage> {
         password: _passwordController.text.trim(),
       );
 
+
       // Send email verification
       if (userCredential.user != null && !userCredential.user!.emailVerified) {
         await userCredential.user!.sendEmailVerification();

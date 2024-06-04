@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:runners_high/UserProfilePage.dart';
 import 'home_page.dart';
 import 'login_page.dart';
 import 'signup_page.dart';
 import 'run_tracking_page.dart';
 import 'onboarding_page.dart';
 import 'firebase_options.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'forgot_password_Page.dart';
 
 
 
@@ -62,6 +65,7 @@ class MyAppState extends State<MyApp> {
         '/run_tracking': (context) => RunTrackingPage(onToggleTheme: _toggleTheme),
         '/onboarding': (context) => const OnboardingPage(),
         '/profile': (context) =>  UserProfilePage(),
+        '/forgotPassword': (context) => forgotPasswordPage(onToggleTheme: _toggleTheme),
       },
     );
   }

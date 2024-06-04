@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:runners_high/main.dart';
 
 class LoginPage extends StatefulWidget {
   final VoidCallback onToggleTheme;
@@ -24,7 +25,7 @@ class LoginPageState extends State<LoginPage> {
     super.initState();
     _firebaseStreamEvents = FirebaseAuth.instance.authStateChanges().listen((User? user) {
       if (user != null) {
-        currentUser = user;
+        var currentUser = user;
         Navigator.pushReplacementNamed(context, '/home');
       }
     });
@@ -46,7 +47,7 @@ class LoginPageState extends State<LoginPage> {
       );
       Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (context) => MyApp(currentUser: currentUser),
+        builder: (context) => MyApp(),
       ),
     );
       
@@ -156,7 +157,9 @@ class LoginPageState extends State<LoginPage> {
                     ],
                   ),
                   TextButton(
-                    onPressed: _resetPassword,
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/forgotPassword');
+                    },
                     child: const Text(
                       'Forgot Password?',
                       style: TextStyle(color: Colors.lightBlue),
