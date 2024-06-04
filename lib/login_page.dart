@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:runners_high/main.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class LoginPage extends StatefulWidget {
   final VoidCallback onToggleTheme;
@@ -9,14 +9,15 @@ class LoginPage extends StatefulWidget {
   const LoginPage({super.key, required this.onToggleTheme});
 
   @override
-  _LoginPageState createState() => _LoginPageState();
+  LoginPageState createState() => LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   late final StreamSubscription<User?> _firebaseStreamEvents;
-  late final User? currentUser;
+  bool _rememberMe = false;
+  bool _obscureText = true;
 
   @override
   void initState() {
@@ -75,51 +76,140 @@ class _LoginPageState extends State<LoginPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Login'),
-        backgroundColor: Colors.blue,
+        title: Text(
+          "Runners' High",
+          style: TextStyle(color: Colors.black), // Ensures the text color does not change
+        ),
+        backgroundColor: Colors.white, // Fixed color for the AppBar
         actions: [
           IconButton(
-            icon: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
+            icon: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode, color: Colors.black),
             onPressed: widget.onToggleTheme,
           ),
         ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Image.asset(
-              isDarkMode ? 'lib/images/runnerslogo_dark.png' : 'lib/images/runnerslogo_light.png',
-              height: 100, // Adjust the height as needed
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(labelText: 'Email'),
-              keyboardType: TextInputType.emailAddress,
-            ),
-            TextField(
-              controller: _passwordController,
-              decoration: const InputDecoration(labelText: 'Password'),
-              obscureText: true,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _signIn,
-              child: const Text('Sign In'),
-            ),
-            TextButton(
-              onPressed: _resetPassword,
-              child: const Text('Forgot Password?'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/signup');
-              },
-              child: const Text("Don't have an account? Sign Up"),
-            ),
-          ],
+        child: DefaultTextStyle(
+          style: GoogleFonts.readexPro(),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Image.asset(
+                isDarkMode ? 'lib/images/logo2dark.png' : 'lib/images/logo2.png',
+                height: 200,
+              ),
+              const SizedBox(height: 20),
+              TextField(
+                controller: _emailController,
+                decoration: InputDecoration(
+                  labelText: 'Email',
+                  border: const OutlineInputBorder(),
+                  filled: true,
+                  fillColor: const Color(0xFFD3D3D3), // Light grey color
+                  labelStyle: const TextStyle(color: Colors.black), // Ensures label text is always black
+                ),
+                keyboardType: TextInputType.emailAddress,
+                style: const TextStyle(color: Colors.black), // Ensures text is always black
+              ),
+              const SizedBox(height: 20),
+              TextField(
+                controller: _passwordController,
+                decoration: InputDecoration(
+                  labelText: 'Password',
+                  border: const OutlineInputBorder(),
+                  filled: true,
+                  fillColor: const Color(0xFFD3D3D3), // Light grey color
+                  labelStyle: const TextStyle(color: Colors.black), // Ensures label text is always black
+                  suffixIcon: IconButton(
+                    icon: Icon(_obscureText ? Icons.visibility : Icons.visibility_off, color: Colors.black), // Ensures icon is always black
+                    onPressed: () {
+                      setState(() {
+                        _obscureText = !_obscureText;
+                      });
+                    },
+                  ),
+                ),
+                obscureText: _obscureText,
+                style: const TextStyle(color: Colors.black), // Ensures text is always black
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: _rememberMe,
+                        onChanged: (bool? value) {
+                          setState(() {
+                            _rememberMe = value!;
+                          });
+                        },
+                      ),
+                      Text(
+                        'Remember me',
+                        style: TextStyle(
+                          color: isDarkMode ? Colors.white : Colors.black, // Black in light mode, white in dark mode
+                        ),
+                      ),
+                    ],
+                  ),
+                  TextButton(
+                    onPressed: _resetPassword,
+                    child: const Text(
+                      'Forgot Password?',
+                      style: TextStyle(color: Colors.lightBlue),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity, // Match the width of the email and password fields
+                height: 38,
+                child: ElevatedButton(
+                  onPressed: _signIn,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF6BB2FF), // Light blue color
+                    padding: const EdgeInsetsDirectional.fromSTEB(24, 0, 24, 0),
+                    elevation: 3,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: Text(
+                    'Log in',
+                    style: GoogleFonts.readexPro(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold, // Make the text bold
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "Don’t have an account?",
+                    style: TextStyle(
+                      color: isDarkMode ? Colors.white : Colors.grey, // Grey in light mode, white in dark mode
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/signup');
+                    },
+                    child: const Text(
+                      'Sign Up',
+                      style: TextStyle(color: Colors.blue),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

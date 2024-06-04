@@ -7,15 +7,15 @@ PODS:
   - Firebase/Database (10.25.0):
     - Firebase/CoreOnly
     - FirebaseDatabase (~> 10.25.0)
-  - firebase_auth (4.19.6):
+  - firebase_auth (4.20.0):
     - Firebase/Auth (~> 10.25.0)
     - Firebase/CoreOnly (~> 10.25.0)
     - firebase_core
     - FlutterMacOS
-  - firebase_core (2.31.1):
+  - firebase_core (2.32.0):
     - Firebase/CoreOnly (~> 10.25.0)
     - FlutterMacOS
-  - firebase_database (10.5.6):
+  - firebase_database (10.5.7):
     - Firebase/CoreOnly (~> 10.25.0)
     - Firebase/Database (~> 10.25.0)
     - firebase_core
@@ -71,6 +71,9 @@ PODS:
     - GoogleUtilities/Privacy
   - GTMSessionFetcher/Core (3.4.1)
   - leveldb-library (1.22.5)
+  - path_provider_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
   - PromisesObjC (2.4.0)
 
 DEPENDENCIES:
@@ -79,6 +82,10 @@ DEPENDENCIES:
   - firebase_database (from `Flutter/ephemeral/.symlinks/plugins/firebase_database/macos`)
   - FlutterMacOS (from `Flutter/ephemeral`)
   - geolocator_apple (from `Flutter/ephemeral/.symlinks/plugins/geolocator_apple/macos`)
+<<<<<<< HEAD
+=======
+  - path_provider_foundation (from `Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin`)
+>>>>>>> 4e619d835743eabaf5763ccab831308f18bcd5b2
 
 SPEC REPOS:
   trunk:
@@ -105,12 +112,17 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral
   geolocator_apple:
     :path: Flutter/ephemeral/.symlinks/plugins/geolocator_apple/macos
+<<<<<<< HEAD
+=======
+  path_provider_foundation:
+    :path: Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin
+>>>>>>> 4e619d835743eabaf5763ccab831308f18bcd5b2
 
 SPEC CHECKSUMS:
   Firebase: 0312a2352584f782ea56f66d91606891d4607f06
-  firebase_auth: bd1035d255f4fcea641d3ba2d7df44429e94423b
-  firebase_core: 9d3e68f556bda55d5b2a778a39fdba1747e8f294
-  firebase_database: 75f45ce2743ffe96eca8af9e9ff6dfcf3bdc90d6
+  firebase_auth: e102811c55546b05d1db96ae9af577090e4fb687
+  firebase_core: b5b8b60dad71f93132bbaa21e8d1379367d824f0
+  firebase_database: 34dbecd97bc2b9dd00a280275c9b62527760beba
   FirebaseAppCheckInterop: 5da5ce93e8797a215e3f677fb0654b74e736c8b8
   FirebaseAuth: c0f93dcc570c9da2bffb576969d793e95c344fbb
   FirebaseCore: 7ec4d0484817f12c3373955bc87762d96842d483
@@ -122,6 +134,7 @@ SPEC CHECKSUMS:
   GoogleUtilities: ea963c370a38a8069cc5f7ba4ca849a60b6d7d15
   GTMSessionFetcher: 8000756fc1c19d2e5697b90311f7832d2e33f6cd
   leveldb-library: e8eadf9008a61f9e1dde3978c086d2b6d9b9dc28
+  path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
 
 PODFILE CHECKSUM: 236401fc2c932af29a9fcf0e97baeeb2d750d367
