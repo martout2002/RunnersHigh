@@ -11,15 +11,14 @@ import 'firebase_options.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'forgot_password_Page.dart';
 
-
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  
-  await FirebaseAuth.instance.signOut(); // Ensure user is logged out on app start
+
+  await FirebaseAuth.instance
+      .signOut(); // Ensure user is logged out on app start
   runApp(const MyApp());
 }
 
@@ -62,10 +61,12 @@ class MyAppState extends State<MyApp> {
         '/login': (context) => LoginPage(onToggleTheme: _toggleTheme),
         '/signup': (context) => SignUpPage(onToggleTheme: _toggleTheme),
         '/home': (context) => HomePage(onToggleTheme: _toggleTheme),
-        '/run_tracking': (context) => RunTrackingPage(onToggleTheme: _toggleTheme),
+        '/run_tracking': (context) =>
+            RunTrackingPage(onToggleTheme: _toggleTheme),
         '/onboarding': (context) => const OnboardingPage(),
-        '/profile': (context) =>  UserProfilePage(),
-        '/forgotPassword': (context) => forgotPasswordPage(onToggleTheme: _toggleTheme),
+        '/profile': (context) => UserProfilePage(),
+        '/forgotPassword': (context) =>
+            forgotPasswordPage(onToggleTheme: _toggleTheme),
       },
     );
   }
