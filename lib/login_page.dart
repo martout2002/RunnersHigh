@@ -41,10 +41,17 @@ class LoginPageState extends State<LoginPage> {
 
   Future<void> _signIn() async {
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
+      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
+      User? user = userCredential.user;
+      if (user != null) {
+        print("User ID: ${user.uid}");
+        print("Email: ${user.email}");
+        print("Display Name: ${user.displayName}");
+        print("Photo URL: ${user.photoURL}");
+      }
       Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (context) => MyApp(),
@@ -54,19 +61,6 @@ class LoginPageState extends State<LoginPage> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to sign in: $e')));
-      }
-    }
-  }
-
-  Future<void> _resetPassword() async {
-    try {
-      await FirebaseAuth.instance.sendPasswordResetEmail(email: _emailController.text.trim());
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Password reset email sent')));
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to send reset email: $e')));
       }
     }
   }
