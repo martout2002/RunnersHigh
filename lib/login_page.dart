@@ -25,7 +25,6 @@ class LoginPageState extends State<LoginPage> {
     super.initState();
     _firebaseStreamEvents = FirebaseAuth.instance.authStateChanges().listen((User? user) {
       if (user != null) {
-        var currentUser = user;
         Navigator.pushReplacementNamed(context, '/home');
       }
     });
@@ -50,7 +49,6 @@ class LoginPageState extends State<LoginPage> {
         print("User ID: ${user.uid}");
         print("Email: ${user.email}");
         print("Display Name: ${user.displayName}");
-        print("Photo URL: ${user.photoURL}");
       }
       Navigator.of(context).pushReplacement(
       MaterialPageRoute(
