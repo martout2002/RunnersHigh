@@ -44,10 +44,16 @@ class LoginPageState extends State<LoginPage> {
       _isLoading = true;
     });
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
+      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
+      User? user = userCredential.user;
+      if (user != null) {
+        print("User ID: ${user.uid}");
+        print("Email: ${user.email}");
+        print("Display Name: ${user.displayName}");
+      }
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (context) => const MyApp(),

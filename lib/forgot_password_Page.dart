@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'customAppBar.dart'; // Import the custom AppBar
 
-class forgotPasswordPage extends StatefulWidget {
+class ForgotPasswordPage extends StatefulWidget {
   final VoidCallback onToggleTheme;
   
 
-  const forgotPasswordPage({super.key, required this.onToggleTheme});
+  const ForgotPasswordPage({super.key, required this.onToggleTheme});
   
   @override
-  forgotPasswordPageState createState() => forgotPasswordPageState();
+  ForgotPasswordPageState createState() => ForgotPasswordPageState();
 }
 
-class forgotPasswordPageState extends State<forgotPasswordPage> {
+class ForgotPasswordPageState extends State<ForgotPasswordPage> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _emailController;
   late final TextEditingController _passwordController;
