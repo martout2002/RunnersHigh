@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_gemini/flutter_gemini.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:runners_high/UserProfilePage.dart';
 import 'home_page.dart';
 import 'login_page.dart';
@@ -14,12 +15,13 @@ import 'forgot_password_Page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env"); // Load environment variables
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // Initialize Gemini API with your API key
-  Gemini.init(apiKey: 'AIzaSyDbeiFsxNqRQQhmVpUWgYFU0AosmzAUHL0', enableDebugging: true);
+  // Initialize Gemini API with your API key from environment variables
+  Gemini.init(apiKey: dotenv.env['GEMINI_API_KEY']!, enableDebugging: true);
 
   await FirebaseAuth.instance.signOut(); // Ensure user is logged out on app start
   runApp(const MyApp());
