@@ -10,7 +10,7 @@ import 'run_tracking_page.dart';
 import 'onboarding_page.dart';
 import 'firebase_options.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'forgot_password_page.dart';
+import 'forgot_password_Page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -67,9 +67,7 @@ class MyAppState extends State<MyApp> {
         '/run_tracking': (context) => RunTrackingPage(onToggleTheme: _toggleTheme),
         '/onboarding': (context) => const OnboardingPage(),
         '/profile': (context) => UserProfilePage(),
-        '/forgotPassword': (context) => forgotPasswordPage(onToggleTheme: _toggleTheme),
-        '/forgotPassword': (context) =>
-            forgotPasswordPage(onToggleTheme: _toggleTheme),
+        '/forgotPassword': (context) => ForgotPasswordPage(onToggleTheme: _toggleTheme),
       },
     );
   }

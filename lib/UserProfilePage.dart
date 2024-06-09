@@ -7,11 +7,7 @@ import 'package:firebase_database/firebase_database.dart';
 class UserProfilePage extends StatefulWidget {
   UserProfilePage({super.key});
 
-<<<<<<< HEAD
-  final DatabaseReference _userRef = FirebaseDatabase.instance.ref().child('users');
-=======
   //final DatabaseReference _userRef = FirebaseDatabase.instance.reference().child('users');
->>>>>>> 42eb65b7c5fb21748cd85ba0b06e9e55d513d664
 
   @override
   _UserProfilePageState createState() => _UserProfilePageState();
@@ -29,42 +25,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
 
   @override
-<<<<<<< HEAD
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('User Profile'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const CircleAvatar(
-              radius: 50,
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'John',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              'Runner',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
-              ),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                // TODO: Implement edit profile functionality
-              },
-              child: const Text('Edit Profile'),
-=======
   void initState() {
     super.initState();
     ref = FirebaseDatabase.instance.ref().child('profiles').child(user!.uid);
@@ -178,7 +138,6 @@ Widget build(BuildContext context) {
                 // TODO: Implement edit profile functionality
               },
               child: Text('Edit Profile', style: TextStyle(fontSize: 12),),
->>>>>>> 42eb65b7c5fb21748cd85ba0b06e9e55d513d664
             ),
           ),
           SizedBox(height: 10),

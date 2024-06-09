@@ -4,7 +4,6 @@ import 'customAppBar.dart'; // Import the custom AppBar
 
 class ForgotPasswordPage extends StatefulWidget {
   final VoidCallback onToggleTheme;
-  
 
   const ForgotPasswordPage({super.key, required this.onToggleTheme});
   
@@ -15,20 +14,16 @@ class ForgotPasswordPage extends StatefulWidget {
 class ForgotPasswordPageState extends State<ForgotPasswordPage> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _emailController;
-  late final TextEditingController _passwordController;
-  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
     _emailController = TextEditingController();
-    _passwordController = TextEditingController();
   }
 
   @override
   void dispose() {
     _emailController.dispose();
-    _passwordController.dispose();
     super.dispose();
   }
 
@@ -45,7 +40,8 @@ class ForgotPasswordPageState extends State<ForgotPasswordPage> {
       }
     }
   }
-   @override
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(title: 'Forgot Password', onToggleTheme: widget.onToggleTheme),
@@ -60,7 +56,14 @@ class ForgotPasswordPageState extends State<ForgotPasswordPage> {
                 controller: _emailController,
                 decoration: const InputDecoration(labelText: 'Email'),
                 validator: (value) {
-                  // ...
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your email';
+                  }
+                  final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+                  if (!emailRegex.hasMatch(value)) {
+                    return 'Please enter a valid email';
+                  }
+                  return null;
                 },
               ),
               const SizedBox(height: 20),
@@ -83,4 +86,3 @@ class ForgotPasswordPageState extends State<ForgotPasswordPage> {
     );
   }
 }
-
