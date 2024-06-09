@@ -45,6 +45,7 @@ dependencies:
   permission_handler: ^11.3.1
   http: ^1.2.1
   flutter_gemini: ^2.0.4
+  flutter_dotenv: ^5.1.0
 
 
 dev_dependencies:
