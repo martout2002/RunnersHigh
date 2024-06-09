@@ -19,13 +19,13 @@ class LoginPageState extends State<LoginPage> {
   late final StreamSubscription<User?> _firebaseStreamEvents;
   bool _rememberMe = false;
   bool _obscureText = true;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
     _firebaseStreamEvents = FirebaseAuth.instance.authStateChanges().listen((User? user) {
       if (user != null) {
-        var currentUser = user;
         Navigator.pushReplacementNamed(context, '/home');
       }
     });
@@ -40,25 +40,36 @@ class LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _signIn() async {
+    setState(() {
+      _isLoading = true;
+    });
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
       Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => MyApp(),
-      ),
-    );
-      
+        MaterialPageRoute(
+          builder: (context) => const MyApp(),
+        ),
+      );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to sign in: $e')));
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
   }
 
   Future<void> _resetPassword() async {
+    setState(() {
+      _isLoading = true;
+    });
     try {
       await FirebaseAuth.instance.sendPasswordResetEmail(email: _emailController.text.trim());
       if (mounted) {
@@ -67,6 +78,12 @@ class LoginPageState extends State<LoginPage> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to send reset email: $e')));
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
   }
@@ -77,7 +94,7 @@ class LoginPageState extends State<LoginPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           "Runners' High",
           style: TextStyle(color: Colors.black), // Ensures the text color does not change
         ),
@@ -103,12 +120,12 @@ class LoginPageState extends State<LoginPage> {
               const SizedBox(height: 20),
               TextField(
                 controller: _emailController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Email',
-                  border: const OutlineInputBorder(),
+                  border: OutlineInputBorder(),
                   filled: true,
-                  fillColor: const Color(0xFFD3D3D3), // Light grey color
-                  labelStyle: const TextStyle(color: Colors.black), // Ensures label text is always black
+                  fillColor: Color(0xFFD3D3D3), // Light grey color
+                  labelStyle: TextStyle(color: Colors.black), // Ensures label text is always black
                 ),
                 keyboardType: TextInputType.emailAddress,
                 style: const TextStyle(color: Colors.black), // Ensures text is always black
@@ -157,9 +174,7 @@ class LoginPageState extends State<LoginPage> {
                     ],
                   ),
                   TextButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/forgotPassword');
-                    },
+                    onPressed: _resetPassword,
                     child: const Text(
                       'Forgot Password?',
                       style: TextStyle(color: Colors.lightBlue),
@@ -172,7 +187,7 @@ class LoginPageState extends State<LoginPage> {
                 width: double.infinity, // Match the width of the email and password fields
                 height: 38,
                 child: ElevatedButton(
-                  onPressed: _signIn,
+                  onPressed: _isLoading ? null : _signIn,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF6BB2FF), // Light blue color
                     padding: const EdgeInsetsDirectional.fromSTEB(24, 0, 24, 0),
@@ -181,13 +196,17 @@ class LoginPageState extends State<LoginPage> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  child: Text(
-                    'Log in',
-                    style: GoogleFonts.readexPro(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold, // Make the text bold
-                    ),
-                  ),
+                  child: _isLoading
+                      ? const CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        )
+                      : Text(
+                          'Log in',
+                          style: GoogleFonts.readexPro(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold, // Make the text bold
+                          ),
+                        ),
                 ),
               ),
               const SizedBox(height: 20),

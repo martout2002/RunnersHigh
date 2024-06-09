@@ -1,5 +1,5 @@
 pluginManagement {
-    def flutterSdkPath = "C:\\Users\\Hundi\\flutter";
+    def flutterSdkPath = "C:\\Users\\Core Plus Tier 1\\flutter\\flutter";
 
     includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")
 

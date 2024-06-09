@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'services/gemini_api.dart';
 import 'customAppBar.dart';
 import 'run_tracking_page.dart';
 
@@ -17,11 +19,29 @@ class HomePage extends StatefulWidget {
 class HomePageState extends State<HomePage> {
   double progress = 0.0;
   List<Map<String, dynamic>> _pastRuns = [];
+  String? _runRecommendation;
+  String? _userGoal;
+  late GeminiService _geminiService;
 
   @override
   void initState() {
     super.initState();
+    _geminiService = GeminiService();
     _checkOnboardingStatus();
+    _checkLocationPermission();
+  }
+
+  Future<void> _checkLocationPermission() async {
+    if (await Permission.location.request().isGranted) {
+      // Location permission is granted
+      // Initialize Google Maps or location-based services here
+    } else {
+      // Location permission is not granted
+      if (await Permission.location.isPermanentlyDenied) {
+        // Handle the case where the user has permanently denied the permission
+        openAppSettings();
+      }
+    }
   }
 
   void _checkOnboardingStatus() async {
@@ -32,6 +52,9 @@ class HomePageState extends State<HomePage> {
         if (snapshot.exists) {
           final data = Map<String, dynamic>.from(snapshot.value as Map);
           if (data['name'] != null && data['age'] != null && data['gender'] != null && data['experience'] != null && data['goal'] != null) {
+            setState(() {
+              _userGoal = data['goal'];
+            });
             _initializeRunData();
           } else {
             Navigator.pushReplacementNamed(context, '/onboarding');
@@ -59,8 +82,24 @@ class HomePageState extends State<HomePage> {
           setState(() {
             _pastRuns = runKeys.map((key) => {'key': key, ...Map<String, dynamic>.from(data[key])}).toList();
           });
+          print('Run data initialized: $_pastRuns'); // Debug print statement
+          _fetchRunRecommendation();  // Fetch recommendation after initializing run data
         }
       });
+    }
+  }
+
+  Future<void> _fetchRunRecommendation() async {
+    print('Fetching run recommendation...'); // Debug print statement
+    final userHistory = _pastRuns.map((run) => "Run on ${run['date']}: ${run['distance']} meters at ${run['pace']} pace").join("\n");
+    try {
+      final recommendation = await _geminiService.getRunRecommendation(userHistory, _userGoal);
+      setState(() {
+        _runRecommendation = recommendation;
+      });
+      print('Run recommendation fetched: $_runRecommendation'); // Debug print statement
+    } catch (e) {
+      print('Error fetching recommendation: $e');
     }
   }
 
@@ -71,6 +110,7 @@ class HomePageState extends State<HomePage> {
       runRef.remove().then((_) {
         setState(() {
           _pastRuns.removeWhere((run) => run['key'] == key);
+          _fetchRunRecommendation(); // Update recommendation after deleting a run
         });
       });
     }
@@ -96,6 +136,14 @@ class HomePageState extends State<HomePage> {
               progressColor: Colors.blue,
             ),
           ),
+          if (_runRecommendation != null)
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                'Recommendation: $_runRecommendation',
+                style: const TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+              ),
+            ),
           Expanded(
             child: ListView.builder(
               itemCount: _pastRuns.length,

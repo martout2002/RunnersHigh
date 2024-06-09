@@ -63,7 +63,7 @@ class forgotPasswordPageState extends State<forgotPasswordPage> {
                   // ...
                 },
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
@@ -74,7 +74,7 @@ class forgotPasswordPageState extends State<forgotPasswordPage> {
                     }
                   }
                 },
-                child: Text('Reset Password'),
+                child: const Text('Reset Password'),
               ),
             ],
           ),

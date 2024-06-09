@@ -1,1 +1,14 @@
 flutter/ephemeral
+.dart_tool/
+.idea/
+.packages
+.flutter-plugins
+.flutter-plugins-dependencies
+.flutter-versions
+build/
+ios/Pods/
+.symlinks/
+.vscode/
+*.log
+pubspec.lock
+.metadata
