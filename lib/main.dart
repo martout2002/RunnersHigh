@@ -15,7 +15,7 @@ import 'forgot_password_Page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: ".env"); // Load environment variables
+  await dotenv.load(fileName: "apiKey.env"); // Load environment variables
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );

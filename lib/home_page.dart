@@ -6,6 +6,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'services/gemini_api.dart';
 import 'customAppBar.dart';
 import 'run_tracking_page.dart';
+import 'recommendation_widget.dart';
 
 class HomePage extends StatefulWidget {
   final VoidCallback onToggleTheme;
@@ -52,9 +53,11 @@ class HomePageState extends State<HomePage> {
         if (snapshot.exists) {
           final data = Map<String, dynamic>.from(snapshot.value as Map);
           if (data['name'] != null && data['age'] != null && data['gender'] != null && data['experience'] != null && data['goal'] != null) {
-            setState(() {
-              _userGoal = data['goal'];
-            });
+            if (mounted) {
+              setState(() {
+                _userGoal = data['goal'];
+              });
+            }
             _initializeRunData();
           } else {
             Navigator.pushReplacementNamed(context, '/onboarding');
@@ -79,11 +82,15 @@ class HomePageState extends State<HomePage> {
         if (event.snapshot.value != null) {
           final data = Map<String, dynamic>.from(event.snapshot.value as Map);
           final runKeys = data.keys.toList();
-          setState(() {
-            _pastRuns = runKeys.map((key) => {'key': key, ...Map<String, dynamic>.from(data[key])}).toList();
-          });
+          if (mounted) {
+            setState(() {
+              _pastRuns = runKeys.map((key) => {'key': key, ...Map<String, dynamic>.from(data[key])}).toList();
+            });
+          }
           print('Run data initialized: $_pastRuns'); // Debug print statement
           _fetchRunRecommendation();  // Fetch recommendation after initializing run data
+        } else {
+          _fetchRunRecommendation();  // Fetch recommendation even if there is no run data
         }
       });
     }
@@ -91,15 +98,47 @@ class HomePageState extends State<HomePage> {
 
   Future<void> _fetchRunRecommendation() async {
     print('Fetching run recommendation...'); // Debug print statement
-    final userHistory = _pastRuns.map((run) => "Run on ${run['date']}: ${run['distance']} meters at ${run['pace']} pace").join("\n");
-    try {
-      final recommendation = await _geminiService.getRunRecommendation(userHistory, _userGoal);
-      setState(() {
-        _runRecommendation = recommendation;
-      });
+    final storedRecommendation = await _geminiService.getStoredRecommendation();
+
+    if (storedRecommendation != null) {
+      final timestamp = DateTime.parse(storedRecommendation['timestamp']);
+      final oneWeekAgo = DateTime.now().subtract(Duration(days: 7));
+
+      if (timestamp.isAfter(oneWeekAgo)) {
+        if (mounted) {
+          setState(() {
+            _runRecommendation = storedRecommendation['recommendation'];
+          });
+        }
+        print('Using stored recommendation: $_runRecommendation'); // Debug print statement
+        return;
+      }
+    }
+
+    String? recommendation;
+    if (_pastRuns.isEmpty) {
+      try {
+        recommendation = await _geminiService.getRunRecommendationBasedOnGoal(_userGoal);
+      } catch (e) {
+        print('Error fetching recommendation based on goal: $e');
+      }
+    } else {
+      final userHistory = _pastRuns.map((run) => "Run on ${run['date']}: ${run['distance']} meters at ${run['pace']} pace").join("\n");
+      try {
+        recommendation = await _geminiService.getRunRecommendation(userHistory, _userGoal);
+      } catch (e) {
+        print('Error fetching recommendation: $e');
+      }
+    }
+
+    if (recommendation != null) {
+      await _geminiService.storeRecommendation(recommendation);
+      if (mounted) {
+        setState(() {
+          _runRecommendation = recommendation;
+        });
+      }
       print('Run recommendation fetched: $_runRecommendation'); // Debug print statement
-    } catch (e) {
-      print('Error fetching recommendation: $e');
     }
   }
 
@@ -108,10 +147,12 @@ class HomePageState extends State<HomePage> {
     if (user != null) {
       final runRef = FirebaseDatabase.instance.ref().child('runs').child(user.uid).child(key);
       runRef.remove().then((_) {
-        setState(() {
-          _pastRuns.removeWhere((run) => run['key'] == key);
-          _fetchRunRecommendation(); // Update recommendation after deleting a run
-        });
+        if (mounted) {
+          setState(() {
+            _pastRuns.removeWhere((run) => run['key'] == key);
+          });
+        }
+        _fetchRunRecommendation(); // Update recommendation after deleting a run
       });
     }
   }
@@ -137,11 +178,13 @@ class HomePageState extends State<HomePage> {
             ),
           ),
           if (_runRecommendation != null)
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(
-                'Recommendation: $_runRecommendation',
-                style: const TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: RecommendationWidget(
+                  recommendation: _runRecommendation!,
+                  pastRuns: _pastRuns,
+                ),
               ),
             ),
           Expanded(
@@ -150,14 +193,46 @@ class HomePageState extends State<HomePage> {
               itemBuilder: (context, index) {
                 final run = _pastRuns[index];
                 final key = run['key']; // Get the key for deletion
-                return ListTile(
-                  title: Text(run['name'] ?? 'Unnamed Run'),
-                  subtitle: Text('Distance: ${run['distance'].toStringAsFixed(2)} meters, Pace: ${run['pace'].toStringAsFixed(2)} min/km'),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: () {
-                      _deleteRun(key);
-                    },
+                return Card(
+                  margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                  child: ListTile(
+                    leading: Icon(
+                      run['distance'] >= 5 ? Icons.directions_run : Icons.directions_walk,
+                      color: run['distance'] >= 5 ? Colors.green : Colors.blue,
+                      size: 40.0,
+                    ),
+                    title: Text(
+                      '${run['distance'].toStringAsFixed(2)} mi',
+                      style: const TextStyle(
+                        fontSize: 20.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    subtitle: Text(
+                      '${run['name'] ?? 'Unnamed Run'}\nTime: ${run['time']}',
+                      style: const TextStyle(
+                        fontSize: 16.0,
+                      ),
+                    ),
+                    trailing: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        GestureDetector(
+                          onTap: () => _deleteRun(key),
+                          child: const Icon(
+                            Icons.delete,
+                            color: Colors.red,
+                            size: 30.0,
+                          ),
+                        ),
+                        const SizedBox(height: 8.0),
+                        Icon(
+                          run['distance'] >= 5 ? Icons.check_circle : Icons.check_circle_outline,
+                          color: run['distance'] >= 5 ? Colors.green : Colors.grey,
+                          size: 30.0,
+                        ),
+                      ],
+                    ),
                   ),
                 );
               },
