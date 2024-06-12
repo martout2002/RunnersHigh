@@ -1,11 +1,9 @@
-import 'dart:async';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 
 class UserProfilePage extends StatefulWidget {
-  UserProfilePage({super.key});
+  const UserProfilePage({super.key});
 
   //final DatabaseReference _userRef = FirebaseDatabase.instance.reference().child('users');
 
@@ -39,10 +37,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
       } 
     });
     // number of runs
-    ref_runs?.child('num_of_runs').get().then((DataSnapshot? snapshot) {
+    ref_runs.child('num_of_runs').get().then((DataSnapshot? snapshot) {
       if (snapshot != null) {
         setState(() {
-          num_of_runs = snapshot.children.length as int;
+          num_of_runs = snapshot.children.length;
         });
       } 
     });
@@ -76,7 +74,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
 Widget build(BuildContext context) {
   return Scaffold(
     appBar: AppBar(
-      title: Text("Runner's Profile"),
+      title: const Text("Runner's Profile"),
     ),
     body: Padding(
       padding: const EdgeInsets.fromLTRB(40, 10, 0 ,0),
@@ -85,23 +83,23 @@ Widget build(BuildContext context) {
         children: [
           Row(
             children: [
-              CircleAvatar(
+              const CircleAvatar(
                 radius: 50,
               ),
-              SizedBox(width: 40),
+              const SizedBox(width: 40),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     name,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   Text(
                     exp,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 16,
                       color: Colors.grey,
                     ),
@@ -110,20 +108,20 @@ Widget build(BuildContext context) {
               ),
             ],
           ),
-          SizedBox(width: 40, height: 15),
+          const SizedBox(width: 40, height: 15),
           Row(
             children: [
               Text(
-                '          ' + age.toString() + ' years old',
-                style: TextStyle(
+                '          $age years old',
+                style: const TextStyle(
                   fontSize: 16,
                   color: Colors.grey,
                 ),
               ),
-              SizedBox(width: 40),
+              const SizedBox(width: 40),
               Text(
-                'Goal: ' + goal,
-                style: TextStyle(
+                'Goal: $goal',
+                style: const TextStyle(
                   fontSize: 16,
                   color: Colors.grey,
                 ),
@@ -131,20 +129,20 @@ Widget build(BuildContext context) {
             ],
           ),
           
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           Center(
             child: ElevatedButton(
               onPressed: () {
                 // TODO: Implement edit profile functionality
               },
-              child: Text('Edit Profile', style: TextStyle(fontSize: 12),),
+              child: const Text('Edit Profile', style: TextStyle(fontSize: 12),),
             ),
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           Center(
             child: Text(
-              num_of_runs.toString() + ' runs completed',
-              style: TextStyle(
+              '$num_of_runs runs completed',
+              style: const TextStyle(
                 fontSize: 24,
                 color: Colors.black,
               ),

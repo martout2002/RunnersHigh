@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'dart:developer';
 
 class OnboardingPage extends StatefulWidget {
   const OnboardingPage({super.key});
@@ -13,9 +14,10 @@ class OnboardingPageState extends State<OnboardingPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _ageController = TextEditingController();
+  final _paceController = TextEditingController();
+  final _goalController = TextEditingController();
   String? _selectedGender;
   String? _selectedExperience;
-  String? _selectedGoal;
   bool _isLoading = false;
 
   final PageController _pageController = PageController();
@@ -24,6 +26,8 @@ class OnboardingPageState extends State<OnboardingPage> {
   void dispose() {
     _nameController.dispose();
     _ageController.dispose();
+    _paceController.dispose();
+    _goalController.dispose();
     _pageController.dispose();
     super.dispose();
   }
@@ -54,14 +58,15 @@ class OnboardingPageState extends State<OnboardingPage> {
           'age': int.parse(_ageController.text.trim()),
           'gender': _selectedGender,
           'experience': _selectedExperience,
-          'goal': _selectedGoal,
+          'goal': _goalController.text.trim(),
+          'pace': _paceController.text.trim(),
         });
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, '/home');
-      }
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, '/home');
+        }
       }
     } catch (e) {
-      print(e);
+      log(e.toString());
     } finally {
       setState(() {
         _isLoading = false;
@@ -88,6 +93,7 @@ class OnboardingPageState extends State<OnboardingPage> {
                     _buildGenderPage(),
                     _buildExperiencePage(),
                     _buildGoalPage(),
+                    _buildPacePage(),
                   ],
                 ),
               ),
@@ -246,21 +252,45 @@ class OnboardingPageState extends State<OnboardingPage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        DropdownButtonFormField<String>(
-          value: _selectedGoal,
+        TextFormField(
+          controller: _goalController,
           decoration: const InputDecoration(labelText: 'Goal'),
-          items: ['Fitness', 'Competition', 'Recreation'].map((label) => DropdownMenuItem(
-            value: label,
-            child: Text(label),
-          )).toList(),
-          onChanged: (value) {
-            setState(() {
-              _selectedGoal = value;
-            });
-          },
           validator: (value) {
-            if (value == null) {
-              return 'Please select your goal';
+            if (value == null || value.isEmpty) {
+              return 'Please enter your goal';
+            }
+            return null;
+          },
+        ),
+        const SizedBox(height: 20),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            ElevatedButton(
+              onPressed: _previousPage,
+              child: const Text('Back'),
+            ),
+            ElevatedButton(
+              onPressed: _nextPage,
+              child: const Text('Next'),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPacePage() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        TextFormField(
+          controller: _paceController,
+          decoration: const InputDecoration(labelText: 'Comfortable Pace (min/km)'),
+          keyboardType: TextInputType.number,
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter your comfortable pace';
             }
             return null;
           },
