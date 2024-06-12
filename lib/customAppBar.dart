@@ -75,7 +75,7 @@ class NavDrawer extends StatelessWidget {
             title: const Text('Profile'),
             onTap: () => {Navigator.of(context).push(
               MaterialPageRoute(
-              builder: (context) => UserProfilePage(),
+              builder: (context) => const UserProfilePage(),
             ),
           )},
           ),

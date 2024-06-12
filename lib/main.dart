@@ -68,7 +68,7 @@ class MyAppState extends State<MyApp> {
         '/home': (context) => HomePage(onToggleTheme: _toggleTheme),
         '/run_tracking': (context) => RunTrackingPage(onToggleTheme: _toggleTheme),
         '/onboarding': (context) => const OnboardingPage(),
-        '/profile': (context) => UserProfilePage(),
+        '/profile': (context) => const UserProfilePage(),
         '/forgotPassword': (context) => ForgotPasswordPage(onToggleTheme: _toggleTheme),
       },
     );

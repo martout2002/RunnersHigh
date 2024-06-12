@@ -7,6 +7,7 @@ import 'services/gemini_api.dart';
 import 'customAppBar.dart';
 import 'run_tracking_page.dart';
 import 'recommendation_widget.dart';
+import 'dart:developer';
 
 class HomePage extends StatefulWidget {
   final VoidCallback onToggleTheme;
@@ -20,8 +21,9 @@ class HomePage extends StatefulWidget {
 class HomePageState extends State<HomePage> {
   double progress = 0.0;
   List<Map<String, dynamic>> _pastRuns = [];
-  String? _runRecommendation;
+  Map<String, dynamic>? _runRecommendation;
   String? _userGoal;
+  String? _userPace;
   late GeminiService _geminiService;
 
   @override
@@ -34,12 +36,9 @@ class HomePageState extends State<HomePage> {
 
   Future<void> _checkLocationPermission() async {
     if (await Permission.location.request().isGranted) {
-      // Location permission is granted
-      // Initialize Google Maps or location-based services here
+      // Location permission is granted, initialize location-based services here
     } else {
-      // Location permission is not granted
       if (await Permission.location.isPermanentlyDenied) {
-        // Handle the case where the user has permanently denied the permission
         openAppSettings();
       }
     }
@@ -52,10 +51,11 @@ class HomePageState extends State<HomePage> {
       userRef.get().then((snapshot) {
         if (snapshot.exists) {
           final data = Map<String, dynamic>.from(snapshot.value as Map);
-          if (data['name'] != null && data['age'] != null && data['gender'] != null && data['experience'] != null && data['goal'] != null) {
+          if (data['goal'] != null && data['pace'] != null) {
             if (mounted) {
               setState(() {
                 _userGoal = data['goal'];
+                _userPace = data['pace'];
               });
             }
             _initializeRunData();
@@ -66,8 +66,7 @@ class HomePageState extends State<HomePage> {
           Navigator.pushReplacementNamed(context, '/onboarding');
         }
       }).catchError((error) {
-        // Handle the error here
-        print('Error fetching user data: $error');
+        log('Error fetching user data: $error');
       });
     } else {
       Navigator.pushReplacementNamed(context, '/login');
@@ -81,65 +80,87 @@ class HomePageState extends State<HomePage> {
       runRef.onValue.listen((event) {
         if (event.snapshot.value != null) {
           final data = Map<String, dynamic>.from(event.snapshot.value as Map);
-          final runKeys = data.keys.toList();
           if (mounted) {
             setState(() {
-              _pastRuns = runKeys.map((key) => {'key': key, ...Map<String, dynamic>.from(data[key])}).toList();
+              _pastRuns = data.keys.map((key) => {'key': key, ...Map<String, dynamic>.from(data[key])}).toList();
             });
           }
-          print('Run data initialized: $_pastRuns'); // Debug print statement
-          _fetchRunRecommendation();  // Fetch recommendation after initializing run data
+          _fetchRunRecommendation();
         } else {
-          _fetchRunRecommendation();  // Fetch recommendation even if there is no run data
+          _fetchRunRecommendation();
         }
       });
     }
   }
 
   Future<void> _fetchRunRecommendation() async {
-    print('Fetching run recommendation...'); // Debug print statement
     final storedRecommendation = await _geminiService.getStoredRecommendation();
-
     if (storedRecommendation != null) {
       final timestamp = DateTime.parse(storedRecommendation['timestamp']);
-      final oneWeekAgo = DateTime.now().subtract(Duration(days: 7));
-
+      final oneWeekAgo = DateTime.now().subtract(const Duration(days: 7));
       if (timestamp.isAfter(oneWeekAgo)) {
         if (mounted) {
           setState(() {
-            _runRecommendation = storedRecommendation['recommendation'];
+            _runRecommendation = Map<String, dynamic>.from(storedRecommendation['recommendation']);
           });
         }
-        print('Using stored recommendation: $_runRecommendation'); // Debug print statement
+        _updateProgress();
         return;
       }
     }
 
     String? recommendation;
     if (_pastRuns.isEmpty) {
-      try {
-        recommendation = await _geminiService.getRunRecommendationBasedOnGoal(_userGoal);
-      } catch (e) {
-        print('Error fetching recommendation based on goal: $e');
-      }
+      recommendation = await _geminiService.getRunRecommendationBasedOnGoal(_userGoal, _userPace);
     } else {
       final userHistory = _pastRuns.map((run) => "Run on ${run['date']}: ${run['distance']} meters at ${run['pace']} pace").join("\n");
-      try {
-        recommendation = await _geminiService.getRunRecommendation(userHistory, _userGoal);
-      } catch (e) {
-        print('Error fetching recommendation: $e');
-      }
+      recommendation = await _geminiService.getRunRecommendation(userHistory, _userGoal, _userPace);
     }
 
     if (recommendation != null) {
       await _geminiService.storeRecommendation(recommendation);
       if (mounted) {
         setState(() {
-          _runRecommendation = recommendation;
+          _runRecommendation = _geminiService.processRecommendation(recommendation!);
         });
       }
-      print('Run recommendation fetched: $_runRecommendation'); // Debug print statement
     }
+    _updateProgress();
+  }
+
+  void _updateProgress() {
+    if (_runRecommendation != null) {
+      int totalRuns = 0;
+      int completedRuns = 0;
+
+      _runRecommendation!.forEach((week, runs) {
+        runs.forEach((run, details) {
+          if (_isValidRun(details)) {  // Ensure only valid runs are counted
+            totalRuns++;
+            if (_checkIfRunCompleted(details)) {
+              completedRuns++;
+            }
+          }
+        });
+      });
+
+      setState(() {
+        progress = totalRuns > 0 ? completedRuns / totalRuns : 0.0;
+      });
+    }
+  }
+
+  bool _isValidRun(String details) {
+    return details.contains('Run') && details.contains('m') && details.contains('pace');
+  }
+
+  bool _checkIfRunCompleted(String details) {
+    for (var run in _pastRuns) {
+      if (details.contains(run['distance'].toString()) && details.contains(run['pace'])) {
+        return true;
+      }
+    }
+    return false;
   }
 
   void _deleteRun(String key) {
@@ -152,7 +173,7 @@ class HomePageState extends State<HomePage> {
             _pastRuns.removeWhere((run) => run['key'] == key);
           });
         }
-        _fetchRunRecommendation(); // Update recommendation after deleting a run
+        _fetchRunRecommendation();
       });
     }
   }
@@ -161,7 +182,7 @@ class HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(title: 'Run Tracker', onToggleTheme: widget.onToggleTheme),
-      drawer: const NavDrawer(), // Add the NavDrawer
+      drawer: const NavDrawer(),
       body: Column(
         children: [
           Padding(
@@ -192,7 +213,7 @@ class HomePageState extends State<HomePage> {
               itemCount: _pastRuns.length,
               itemBuilder: (context, index) {
                 final run = _pastRuns[index];
-                final key = run['key']; // Get the key for deletion
+                final key = run['key'];
                 return Card(
                   margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
                   child: ListTile(
@@ -203,16 +224,11 @@ class HomePageState extends State<HomePage> {
                     ),
                     title: Text(
                       '${run['distance'].toStringAsFixed(2)} mi',
-                      style: const TextStyle(
-                        fontSize: 20.0,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: const TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
                     ),
                     subtitle: Text(
-                      '${run['name'] ?? 'Unnamed Run'}\nTime: ${run['time']}',
-                      style: const TextStyle(
-                        fontSize: 16.0,
-                      ),
+                      '${run['name'] ?? 'Unnamed Run'}\nTime: ${run['time']}\nPace: ${run['pace']}',
+                      style: const TextStyle(fontSize: 16.0),
                     ),
                     trailing: Column(
                       mainAxisAlignment: MainAxisAlignment.center,

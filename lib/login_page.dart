@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:runners_high/main.dart';
+import 'dart:developer';
 
 class LoginPage extends StatefulWidget {
   final VoidCallback onToggleTheme;
@@ -50,9 +51,9 @@ class LoginPageState extends State<LoginPage> {
       );
       User? user = userCredential.user;
       if (user != null) {
-        print("User ID: ${user.uid}");
-        print("Email: ${user.email}");
-        print("Display Name: ${user.displayName}");
+        log("User ID: ${user.uid}");
+        log("Email: ${user.email}");
+        log("Display Name: ${user.displayName}");
       }
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(

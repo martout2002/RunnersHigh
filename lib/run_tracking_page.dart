@@ -22,7 +22,7 @@ class RunTrackingPageState extends State<RunTrackingPage> {
   double _pace = 0.0;
   Duration _duration = const Duration();
   Timer? _timer;
-  List<LatLng> _route = [];
+  final List<LatLng> _route = [];
   GoogleMapController? _mapController;
   Position? _lastPosition;
   DatabaseReference? _runRef;

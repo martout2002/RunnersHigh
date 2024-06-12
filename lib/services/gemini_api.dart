@@ -1,57 +1,104 @@
-import 'package:flutter_gemini/flutter_gemini.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter_gemini/flutter_gemini.dart';
+import 'dart:developer';
 
 class GeminiService {
   final Gemini gemini = Gemini.instance;
 
-  Future<String?> getRunRecommendation(String userHistory, String? userGoal) async {
-    _logDebug('Fetching run recommendation from API...');
-    try {
-      final response = await gemini.text(
-        "Based on the history: $userHistory and the goal: $userGoal, what is the recommended run program?",
-      );
+  final String runRecommendationPrompt = "You are a personal fitness instructor. Every month has 4 weeks, a year has 52 weeks. Based on the history: {userHistory}, the goal: {userGoal}, and the comfortable pace: {userPace} min/km, what is the recommended run program? "
+      "Please provide the program in the following format with distances in km and pace in min/km: "
+      "**Week X:**\n"
+      "* Run 1: [distance] km at [pace] min/km pace\n"
+      "* Run 2: [distance] km at [pace] min/km pace\n"
+      "... \n"
+      "**Week Y:**\n"
+      "* Run 1: [distance] km at [pace] min/km pace\n"
+      "* Run 2: [distance] km at [pace] min/km pace\n"
+      "...";
 
-      if (response != null) {
-        _logDebug('API response received: ${response.output}');
-        return response.output;
-      } else {
-        throw Exception('Failed to fetch recommendation');
+  Future<Map<String, dynamic>?> _getUserProfile() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final ref = FirebaseDatabase.instance.ref().child('profiles').child(user.uid);
+      final snapshot = await ref.get();
+      if (snapshot.exists) {
+        final data = (snapshot.value as Map).map<String, dynamic>(
+          (key, value) => MapEntry(key as String, value as dynamic),
+        );
+        log('User profile data retrieved: $data');
+        return data;
       }
+    }
+    return null;
+  }
+
+  Future<String?> _fetchRunRecommendation(String prompt) async {
+    try {
+      final response = await gemini.text(prompt);
+      return response?.output;
     } catch (e) {
-      _logDebug('Error fetching recommendation: $e');
-      throw Exception('Error fetching recommendation: $e');
+      log('Error fetching recommendation: $e');
+      return null;
     }
   }
 
-  Future<String?> getRunRecommendationBasedOnGoal(String? userGoal) async {
-    _logDebug('Fetching run recommendation based on goal from API...');
-    try {
-      final response = await gemini.text(
-        "Based on the goal: $userGoal, what is the recommended run program?",
-      );
+  Future<String?> getRunRecommendation(String userHistory, String? userGoal, String? userPace) async {
+    final prompt = runRecommendationPrompt
+        .replaceAll("{userHistory}", userHistory)
+        .replaceAll("{userGoal}", userGoal ?? "unspecified goal")
+        .replaceAll("{userPace}", userPace ?? "unspecified pace");
 
-      if (response != null) {
-        _logDebug('API response received: ${response.output}');
-        return response.output;
-      } else {
-        throw Exception('Failed to fetch recommendation based on goal');
-      }
-    } catch (e) {
-      _logDebug('Error fetching recommendation based on goal: $e');
-      throw Exception('Error fetching recommendation based on goal: $e');
+    final recommendation = await _fetchRunRecommendation(prompt);
+    if (recommendation != null && _validateRecommendation(recommendation)) {
+      return recommendation;
+    } else {
+      log('Invalid recommendation received: $recommendation');
+      return null;
     }
+  }
+
+  Future<String?> getRunRecommendationBasedOnGoal(String? userGoal, String? userPace) async {
+    return getRunRecommendation("", userGoal, userPace);
+  }
+
+  bool _validateRecommendation(String recommendation) {
+    List<String> weeks = recommendation.split(RegExp(r'\n{2,}'));
+    for (String weekData in weeks) {
+      if (weekData.trim().isEmpty) continue;
+      List<String> lines = weekData.split('\n').where((line) => line.trim().isNotEmpty).toList();
+      String weekTitle = lines[0].trim();
+      if (!_isValidWeekTitle(weekTitle)) {
+        log('Invalid week title: $weekTitle');
+        return false;
+      }
+      for (int j = 1; j < lines.length; j++) {
+        String runDetail = lines[j].trim();
+        if (!_isValidRun(runDetail)) {
+          log('Invalid run detail: $runDetail');
+          return false;
+        }
+      }
+    }
+    return true;
   }
 
   Future<void> storeRecommendation(String recommendation) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       final ref = FirebaseDatabase.instance.ref().child('recommendations').child(user.uid);
-      await ref.set({
-        'recommendation': recommendation,
-        'timestamp': DateTime.now().toIso8601String(),
-      });
-      _logDebug('Recommendation stored in Firebase.');
+      Map<String, dynamic> structuredData = processRecommendation(recommendation);
+
+      try {
+        log('Structured data to store: $structuredData');
+        await ref.set({
+          'recommendation': structuredData,
+          'timestamp': DateTime.now().toIso8601String(),
+        });
+        log('Recommendation stored successfully.');
+      } catch (e) {
+        log('Error storing recommendation: $e');
+      }
     }
   }
 
@@ -61,14 +108,67 @@ class GeminiService {
       final ref = FirebaseDatabase.instance.ref().child('recommendations').child(user.uid);
       final snapshot = await ref.get();
       if (snapshot.exists) {
-        _logDebug('Stored recommendation retrieved from Firebase.');
-        return Map<String, dynamic>.from(snapshot.value as Map);
+        final data = (snapshot.value as Map).map<String, dynamic>(
+          (key, value) => MapEntry(key as String, value as dynamic),
+        );
+        log('Stored recommendation retrieved: $data');
+        return data;
       }
     }
     return null;
   }
 
-  void _logDebug(String message) {
-    print('DEBUG: $message'); // You can replace this with a more sophisticated logging mechanism if needed.
+  Map<String, dynamic> processRecommendation(String recommendation) {
+    Map<String, dynamic> structuredData = {};
+    List<String> weeks = recommendation.split(RegExp(r'\n{2,}'));
+
+    for (String weekData in weeks) {
+      if (weekData.trim().isEmpty) continue;  // Skip empty lines
+      List<String> lines = weekData.split('\n').where((line) => line.trim().isNotEmpty).toList();
+      String weekTitle = lines[0].trim();
+
+      if (_isValidWeekTitle(weekTitle)) {
+        Map<String, String> weekRuns = {};
+        for (int j = 1; j < lines.length; j++) {
+          String runDetail = lines[j].trim();
+          if (_isValidRun(runDetail)) {
+            String runKey = 'Run ${weekRuns.length + 1}';
+            weekRuns[runKey] = _cleanRunDetail(runDetail); // Clean run detail
+          } else {
+            log('Invalid run detail: $runDetail');  // Debugging log
+          }
+        }
+        structuredData[_cleanTitle(weekTitle)] = weekRuns; // Clean week title
+      } else {
+        log('Invalid week title: $weekTitle');  // Debugging log
+      }
+    }
+
+    log('Processed recommendation: $structuredData');  // Debugging log
+    return structuredData;
+  }
+
+  bool _isValidWeekTitle(String title) {
+    bool isValid = RegExp(r'^\*\*Week \d+(-\d+)?:\*\*$').hasMatch(title);
+    if (!isValid) {
+      log('Invalid week title: $title');
+    }
+    return isValid;
+  }
+
+  bool _isValidRun(String runDetail) {
+    bool isValid = RegExp(r'^\* (Run \d+|Interval Run|Hill Repeats|Tempo Run|Rest): .*$').hasMatch(runDetail);
+    if (!isValid) {
+      log('Invalid run detail: $runDetail');
+    }
+    return isValid;
+  }
+
+  String _cleanTitle(String title) {
+    return title.replaceAll('**', '');
+  }
+
+  String _cleanRunDetail(String runDetail) {
+    return runDetail.replaceAll('* ', '');
   }
 }
