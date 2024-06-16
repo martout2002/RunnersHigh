@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:runners_high/home_page.dart';
 import 'run_history_page.dart';
 import 'UserProfilePage.dart';
 
@@ -58,14 +59,21 @@ class NavDrawer extends StatelessWidget {
             onTap: () => {Navigator.of(context).pop()},
           ),
           ListTile(
-            leading: const Icon(Icons.border_color),
-            title: const Text('Feedback'),
-            onTap: () => {Navigator.of(context).pop()},
+            leading: const Icon(Icons.home),
+            title: const Text('Home'),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => HomePage(onToggleTheme: () {  }),
+                ),
+              );
+            },
           ),
           ListTile(
             leading: const Icon(Icons.exit_to_app),
             title: const Text('Logout'),
             onTap: () async {
+              await FirebaseAuth.instance.signOut();
               Navigator.pushReplacementNamed(context, '/login');
             },
           ),

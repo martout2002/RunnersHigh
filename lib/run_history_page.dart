@@ -33,8 +33,17 @@ class _RunHistoryPageState extends State<RunHistoryPage> {
           setState(() {
             _pastRuns = data.keys.map((key) => {'key': key, ...Map<String, dynamic>.from(data[key])}).toList();
           });
+        } else {
+          // Log when there's no data
+          print("No run data available");
         }
+      }, onError: (error) {
+        // Log any errors
+        print("Error fetching run data: $error");
       });
+    } else {
+      // Log when the user is null
+      print("User is null");
     }
   }
 
@@ -43,25 +52,29 @@ class _RunHistoryPageState extends State<RunHistoryPage> {
     return Scaffold(
       appBar: CustomAppBar(title: 'Run History', onToggleTheme: widget.onToggleTheme),
       drawer: const NavDrawer(),
-      body: ListView.builder(
-        itemCount: _pastRuns.length,
-        itemBuilder: (context, index) {
-          final run = _pastRuns[index];
-          return Card(
-            margin: const EdgeInsets.all(8.0),
-            child: ListTile(
-              title: Text('${run['name'] ?? 'Unnamed Run'}'),
-              subtitle: Text('Distance: ${run['distance']} km\nTime: ${run['duration']} seconds\nPace: ${run['pace']} min/km'),
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => RunDetailsPage(run: run, onToggleTheme: widget.onToggleTheme),
-                ),
-              ),
+      body: _pastRuns.isEmpty
+          ? Center(child: Text('No runs available'))
+          : ListView.builder(
+              itemCount: _pastRuns.length,
+              itemBuilder: (context, index) {
+                final run = _pastRuns[index];
+                return Card(
+                  margin: const EdgeInsets.all(8.0),
+                  child: ListTile(
+                    title: Text('${run['name'] ?? 'Unnamed Run'}'),
+                    subtitle: Text(
+                        'Distance: ${run['distance']} km\nTime: ${run['duration']} seconds\nPace: ${run['pace']} min/km'),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            RunDetailsPage(run: run, onToggleTheme: widget.onToggleTheme),
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
-          );
-        },
-      ),
     );
   }
 }
