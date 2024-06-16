@@ -1,0 +1,115 @@
+import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'custom_app_bar.dart';
+import 'nav_drawer.dart';
+
+class RunHistoryPage extends StatefulWidget {
+  final VoidCallback onToggleTheme;
+
+  const RunHistoryPage({super.key, required this.onToggleTheme});
+
+  @override
+  _RunHistoryPageState createState() => _RunHistoryPageState();
+}
+
+class _RunHistoryPageState extends State<RunHistoryPage> {
+  List<Map<String, dynamic>> _pastRuns = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeRunData();
+  }
+
+  void _initializeRunData() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final runRef = FirebaseDatabase.instance.ref().child('runs').child(user.uid);
+      runRef.onValue.listen((event) {
+        if (event.snapshot.value != null) {
+          final data = Map<String, dynamic>.from(event.snapshot.value as Map);
+          setState(() {
+            _pastRuns = data.keys.map((key) => {'key': key, ...Map<String, dynamic>.from(data[key])}).toList();
+          });
+        }
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: CustomAppBar(title: 'Run History', onToggleTheme: widget.onToggleTheme),
+      drawer: const NavDrawer(),
+      body: ListView.builder(
+        itemCount: _pastRuns.length,
+        itemBuilder: (context, index) {
+          final run = _pastRuns[index];
+          return Card(
+            margin: const EdgeInsets.all(8.0),
+            child: ListTile(
+              title: Text('${run['name'] ?? 'Unnamed Run'}'),
+              subtitle: Text('Distance: ${run['distance']} km\nTime: ${run['duration']} seconds\nPace: ${run['pace']} min/km'),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => RunDetailsPage(run: run, onToggleTheme: widget.onToggleTheme),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class RunDetailsPage extends StatelessWidget {
+  final Map<String, dynamic> run;
+  final VoidCallback onToggleTheme;
+
+  const RunDetailsPage({super.key, required this.run, required this.onToggleTheme});
+
+  @override
+  Widget build(BuildContext context) {
+    final List<LatLng> route = (run['route'] as List<dynamic>)
+        .map((point) => LatLng(point['lat'], point['lng']))
+        .toList();
+
+    return Scaffold(
+      appBar: CustomAppBar(title: run['name'] ?? 'Run Details', onToggleTheme: onToggleTheme),
+      body: Column(
+        children: [
+          Expanded(
+            child: GoogleMap(
+              initialCameraPosition: CameraPosition(
+                target: route.isNotEmpty ? route.first : const LatLng(0, 0),
+                zoom: 15,
+              ),
+              polylines: {
+                Polyline(
+                  polylineId: const PolylineId('route'),
+                  points: route,
+                  color: Colors.blue,
+                ),
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Distance: ${run['distance']} km', style: const TextStyle(fontSize: 18)),
+                Text('Duration: ${run['duration']} seconds', style: const TextStyle(fontSize: 18)),
+                Text('Pace: ${run['pace']} min/km', style: const TextStyle(fontSize: 18)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

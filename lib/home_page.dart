@@ -4,10 +4,8 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'services/gemini_api.dart';
 import 'customAppBar.dart';
-import 'run_tracking_page.dart';
 import 'widgets/progress_indicator.dart';
 import 'widgets/recommendation_widget.dart';
-import 'widgets/run_list.dart';
 import 'widgets/floating_action_button.dart';
 import 'dart:developer';
 
@@ -161,11 +159,6 @@ class HomePageState extends State<HomePage> {
                   pastRuns: _pastRuns,
                 ),
               ),
-            ),
-          if (_pastRuns.isNotEmpty)
-            Flexible(
-              fit: FlexFit.tight,
-              child: RunList(pastRuns: _pastRuns),
             ),
         ],
       ),
