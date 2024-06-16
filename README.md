@@ -27,5 +27,7 @@ TBC
 
 TBC
 
-
+Things to change before you can use it:
+-change the android/settings.gradle , find flutter location in ur own pc and change it
+-make a copy of the apiKey.env.example, change it to apiKey.env and add the API key (if you have).
     
