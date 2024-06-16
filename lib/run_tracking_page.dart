@@ -65,10 +65,12 @@ class RunTrackingPageState extends State<RunTrackingPage> {
 
   Future<void> _getCurrentLocationAndSetMap() async {
     Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-    _lastPosition = position;
-    if (_mapController != null) {
+    setState(() {
+      _lastPosition = position;
+    });
+    if (_mapController != null && _lastPosition != null) {
       _mapController!.animateCamera(CameraUpdate.newLatLng(
-        LatLng(position.latitude, position.longitude),
+        LatLng(_lastPosition!.latitude, _lastPosition!.longitude),
       ));
     }
   }
@@ -111,7 +113,7 @@ class RunTrackingPageState extends State<RunTrackingPage> {
         setState(() {
           _duration += const Duration(seconds: 1);
           if (_distance > 0) {
-            _pace = _duration.inMinutes / (_distance / 1000); // minutes per km
+            _pace = _duration.inSeconds / 60 / (_distance); // minutes per km
           }
         });
       }
@@ -121,22 +123,30 @@ class RunTrackingPageState extends State<RunTrackingPage> {
   Future<void> _initializeGoogleMapsAndStartTracking() async {
     await Geolocator.requestPermission();
     Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-    _mapController?.animateCamera(CameraUpdate.newLatLng(
-      LatLng(position.latitude, position.longitude),
-    ));
+    setState(() {
+      _lastPosition = position;
+    });
+    if (_mapController != null && _lastPosition != null) {
+      _mapController!.animateCamera(CameraUpdate.newLatLng(
+        LatLng(_lastPosition!.latitude, _lastPosition!.longitude),
+      ));
+    }
     _positionStreamSubscription = Geolocator.getPositionStream().listen((Position position) {
       if (_isRecording && !_isPaused) {
-        if (_lastPosition != null) {
-          _distance += Geolocator.distanceBetween(
-            _lastPosition!.latitude,
-            _lastPosition!.longitude,
-            position.latitude,
-            position.longitude,
-          );
-        }
         setState(() {
+          if (_lastPosition != null) {
+            _distance += Geolocator.distanceBetween(
+              _lastPosition!.latitude,
+              _lastPosition!.longitude,
+              position.latitude,
+              position.longitude,
+            ) / 1000; // Convert meters to kilometers
+          }
           _lastPosition = position;
           _route.add(LatLng(position.latitude, position.longitude));
+          if (_distance > 0) {
+            _pace = _duration.inSeconds / 60 / (_distance); // minutes per km
+          }
         });
       }
     });
@@ -159,7 +169,6 @@ class RunTrackingPageState extends State<RunTrackingPage> {
       if (mounted) {
         Navigator.pushReplacementNamed(context, '/home');
       }
-      
     }
   }
 
