@@ -22,7 +22,7 @@ class RecommendationWidget extends StatelessWidget {
 
   int _extractWeekNumber(String key) {
     try {
-      return int.parse(key.split(' ')[1].split('-')[0]);
+      return int.parse(RegExp(r'\d+').firstMatch(key)!.group(0)!);
     } catch (e) {
       log('Error parsing week number from key: $key');
       return 0; // Return a default value if parsing fails
@@ -34,17 +34,18 @@ class RecommendationWidget extends StatelessWidget {
     log('Recommendation data: $recommendation'); // Debugging log
     log('Past runs data: $pastRuns'); // Debugging log
 
+    // Sort keys in ascending order
     var sortedKeys = recommendation.keys.toList()
       ..sort((a, b) => _extractWeekNumber(a).compareTo(_extractWeekNumber(b)));
 
     return ListView.builder(
       itemCount: sortedKeys.length,
       itemBuilder: (context, index) {
-        // Reversing the index to display in the correct order
-        String phaseKey = sortedKeys[sortedKeys.length - 1 - index];
+        String phaseKey = sortedKeys[index];
         Map<String, dynamic> phaseDetails = Map<String, dynamic>.from(recommendation[phaseKey]);
         log('Phase details for $phaseKey: $phaseDetails'); // Debugging log
 
+        // Sort runs in ascending order
         var sortedRuns = phaseDetails.keys.toList()
           ..sort((a, b) => _extractWeekNumber(a).compareTo(_extractWeekNumber(b)));
 
