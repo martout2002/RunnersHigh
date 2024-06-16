@@ -20,35 +20,33 @@ class RecommendationWidget extends StatelessWidget {
     return false;
   }
 
+  int _extractWeekNumber(String key) {
+    try {
+      return int.parse(key.split(' ')[1].split('-')[0]);
+    } catch (e) {
+      log('Error parsing week number from key: $key');
+      return 0; // Return a default value if parsing fails
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     log('Recommendation data: $recommendation'); // Debugging log
     log('Past runs data: $pastRuns'); // Debugging log
 
     var sortedKeys = recommendation.keys.toList()
-      ..sort((a, b) {
-        try {
-          return int.parse(a.split(' ')[1].split('-')[0]).compareTo(int.parse(b.split(' ')[1].split('-')[0]));
-        } catch (e) {
-          return 0; // If parsing fails, consider them equal
-        }
-      });
+      ..sort((a, b) => _extractWeekNumber(a).compareTo(_extractWeekNumber(b)));
 
     return ListView.builder(
       itemCount: sortedKeys.length,
       itemBuilder: (context, index) {
-        String phaseKey = sortedKeys[index];
+        // Reversing the index to display in the correct order
+        String phaseKey = sortedKeys[sortedKeys.length - 1 - index];
         Map<String, dynamic> phaseDetails = Map<String, dynamic>.from(recommendation[phaseKey]);
         log('Phase details for $phaseKey: $phaseDetails'); // Debugging log
 
         var sortedRuns = phaseDetails.keys.toList()
-          ..sort((a, b) {
-            try {
-              return int.parse(a.split(' ')[1]).compareTo(int.parse(b.split(' ')[1]));
-            } catch (e) {
-              return 0; // If parsing fails, consider them equal
-            }
-          });
+          ..sort((a, b) => _extractWeekNumber(a).compareTo(_extractWeekNumber(b)));
 
         return Card(
           margin: const EdgeInsets.all(8.0),
