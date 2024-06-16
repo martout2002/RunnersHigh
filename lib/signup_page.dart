@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'customAppBar.dart'; // Import the custom AppBar
+import 'custom_app_bar.dart'; // Import the custom AppBar
 import 'dart:developer';
 
 class SignUpPage extends StatefulWidget {
