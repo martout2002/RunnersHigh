@@ -127,6 +127,22 @@ class HomePageState extends State<HomePage> {
     }
   }
 
+  Future<void> _regenerateRunRecommendation() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      String? newRecommendation = await _geminiService.getRunRecommendationBasedOnGoal(_userGoal, _userPace);
+      if (newRecommendation != null) {
+        final newRecommendationData = _geminiService.processRecommendation(newRecommendation);
+        await _geminiService.storeRecommendation(newRecommendation);
+        setState(() {
+          _runRecommendation = newRecommendationData;
+        });
+        final userRef = FirebaseDatabase.instance.ref().child('profiles').child(user.uid);
+        await userRef.child('recommendation').set(newRecommendationData);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -135,11 +151,44 @@ class HomePageState extends State<HomePage> {
       body: Column(
         children: [
           ProgressIndicatorWidget(runRecommendation: _runRecommendation, pastRuns: _pastRuns),
-          if (_runRecommendation != null) Expanded(child: RecommendationWidget(recommendation: _runRecommendation!, pastRuns: _pastRuns)),
-          Expanded(child: RunList(pastRuns: _pastRuns)),
+          if (_runRecommendation != null)
+            Flexible(
+              fit: FlexFit.tight,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 85.0), // Adjust the padding as needed
+                child: RecommendationWidget(
+                  recommendation: _runRecommendation!,
+                  pastRuns: _pastRuns,
+                ),
+              ),
+            ),
+          if (_pastRuns.isNotEmpty)
+            Flexible(
+              fit: FlexFit.tight,
+              child: RunList(pastRuns: _pastRuns),
+            ),
         ],
       ),
-      floatingActionButton: CustomFloatingActionButton(onToggleTheme: widget.onToggleTheme),
+      floatingActionButton: Stack(
+        children: [
+          Positioned(
+            left: 16.0,
+            bottom: 16.0,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ElevatedButton(
+                onPressed: _regenerateRunRecommendation,
+                child: const Text('Regenerate'),
+              ),
+            ),
+          ),
+          Positioned(
+            right: 16.0,
+            bottom: 16.0,
+            child: CustomFloatingActionButton(onToggleTheme: widget.onToggleTheme),
+          ),
+        ],
+      ),
     );
   }
 }
