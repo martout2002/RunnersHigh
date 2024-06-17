@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -6,6 +7,10 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:runners_high/appbar/nav_drawer.dart';
 import 'package:runners_high/appbar/custom_app_bar.dart';
+import 'dart:io';
+import 'dart:typed_data';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:path_provider/path_provider.dart';
 
 class RunTrackingPage extends StatefulWidget {
   final VoidCallback onToggleTheme;
@@ -158,27 +163,70 @@ class RunTrackingPageState extends State<RunTrackingPage> {
   }
 
   Future<void> _saveRun() async {
-    if (_user != null) {
-      String? runName = await _showRunNameDialog();
-      if (runName != null) {
-        final run = {
-          'name': runName,
-          'distance': _distance.toStringAsFixed(2),
-          'duration': (_duration.inMinutes * 100).round() / 100.0,
-          'pace': (_pace * 100).round() / 100.0,
-          'route': _route
-              .map(
-                  (latLng) => {'lat': latLng.latitude, 'lng': latLng.longitude})
-              .toList(),
-          'timestamp': DateTime.now().toIso8601String(),
-        };
-        _runRef?.push().set(run);
+  if (_user != null) {
+    String? runName = await _showRunNameDialog();
+    if (runName != null) {
+      print("a");
+      
+      String? imageString;
+      // Take a snapshot of the map
+      final Uint8List? mapSnapshot = await _mapController?.takeSnapshot();
+      File? imageFile;
+      print("b");
+      if (mapSnapshot != null) {
+        print("c");
+        // Get the path to the app's temporary directory
+        final Directory tempDir = await getTemporaryDirectory();
+        final String tempPath = tempDir.path;
+        print("agy");
+        // Compress the image
+        final Uint8List compressedImage = await FlutterImageCompress.compressWithList(
+          mapSnapshot,
+          minWidth: 600,
+          minHeight: 800,
+          quality: 88,
+        );
+
+        print("d");
+
+        // Write the image to a file
+        imageFile = File('$tempPath/map_snapshot.png');
+        await imageFile.writeAsBytes(compressedImage, flush: true);
+
+        
+        if (imageFile != null) {
+          // Read the image file as a list of bytes
+          final bytes = await imageFile.readAsBytes();
+
+          // Encode the bytes in Base64 and create a data URL
+          imageString = base64Encode(bytes);
+        }
+
+
+        
+        print("e");
+        // TODO: Upload the image file to a server or cloud storage
       }
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, '/home');
-      }
+      final run = {
+        'name': runName,
+        'distance': _distance.toStringAsFixed(2),
+        'duration': (_duration.inSeconds / 60.0 * 100).round() / 100.0,
+        'pace': (_pace * 100).round() / 100.0,
+        'route': _route
+            .map(
+                (latLng) => {'lat': latLng.latitude, 'lng': latLng.longitude})
+            .toList(),
+        'timestamp': DateTime.now().toIso8601String(),
+        'image': imageString,
+      };
+      print("donge pushing");
+      _runRef?.push().set(run);
+    }
+    if (mounted) {
+      Navigator.pushReplacementNamed(context, '/home');
     }
   }
+}
 
   Future<String?> _showRunNameDialog() async {
     String? runName;

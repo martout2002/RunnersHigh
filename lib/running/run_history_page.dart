@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -81,6 +83,9 @@ class _RunHistoryPageState extends State<RunHistoryPage> {
                 return Card(
                   margin: const EdgeInsets.all(8.0),
                   child: ListTile(
+                    leading: run['image'] != null
+                      ? Image.memory(base64Decode(run['image']))
+                      : null,
                     title: Text('${run['name'] ?? 'Unnamed Run'}'),
                     subtitle: Text(
                         'Distance: ${run['distance']} km\nTime: ${run['duration'].floor()}m : ${((run['duration'] % 1) * 60).round().toString().padLeft(2, '0')}s \nPace: ${run['pace'].floor()}:${((run['pace'] % 1) * 60).round().toString().padLeft(2, '0')}  min/km', style: TextStyle(fontSize: 14),),
