@@ -16,6 +16,10 @@ class RunHistoryPage extends StatefulWidget {
 
 class _RunHistoryPageState extends State<RunHistoryPage> {
   List<Map<String, dynamic>> _pastRuns = [];
+  var run;
+  var duration;
+  var distance;
+
 
   @override
   void initState() {
@@ -36,6 +40,7 @@ class _RunHistoryPageState extends State<RunHistoryPage> {
                 .map((key) =>
                     {'key': key, ...Map<String, dynamic>.from(data[key])})
                 .toList();
+              
           });
         } else {
           // Log when there's no data
@@ -51,6 +56,15 @@ class _RunHistoryPageState extends State<RunHistoryPage> {
     }
   }
 
+  void _setVars(run) {
+    setState(() {
+      //distance = double.tryParse(run['distance']);
+      duration = run['duration'];
+      
+    });
+    
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -63,12 +77,13 @@ class _RunHistoryPageState extends State<RunHistoryPage> {
               itemCount: _pastRuns.length,
               itemBuilder: (context, index) {
                 final run = _pastRuns[index];
+                //_setVars(run);
                 return Card(
                   margin: const EdgeInsets.all(8.0),
                   child: ListTile(
                     title: Text('${run['name'] ?? 'Unnamed Run'}'),
                     subtitle: Text(
-                        'Distance: ${run['distance']} km\nTime: ${run['duration']} seconds\nPace: ${run['pace']} min/km'),
+                        'Distance: ${run['distance']} km\nTime: ${run['duration'].floor()}m : ${((run['duration'] % 1) * 60).round().toString().padLeft(2, '0')}s \nPace: ${run['pace'].floor()}:${((run['pace'] % 1) * 60).round().toString().padLeft(2, '0')}  min/km', style: TextStyle(fontSize: 14),),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -122,9 +137,9 @@ class RunDetailsPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Distance: ${run['distance']} km',
+                Text('Distanced: ${run['distance']} km',
                     style: const TextStyle(fontSize: 18)),
-                Text('Duration: ${run['duration']} seconds',
+                Text('Duration: ${run['duration']} minutes',
                     style: const TextStyle(fontSize: 18)),
                 Text('Pace: ${run['pace']} min/km',
                     style: const TextStyle(fontSize: 18)),

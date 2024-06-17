@@ -163,9 +163,9 @@ class RunTrackingPageState extends State<RunTrackingPage> {
       if (runName != null) {
         final run = {
           'name': runName,
-          'distance': _distance,
-          'duration': _duration.inSeconds,
-          'pace': _pace,
+          'distance': _distance.toStringAsFixed(2),
+          'duration': (_duration.inMinutes * 100).round() / 100.0,
+          'pace': (_pace * 100).round() / 100.0,
           'route': _route
               .map(
                   (latLng) => {'lat': latLng.latitude, 'lng': latLng.longitude})
