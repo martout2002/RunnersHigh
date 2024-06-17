@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'customAppBar.dart'; // Import the custom AppBar
+import 'package:runners_high/appbar/custom_app_bar.dart';
+import '../appbar/customAppBar.dart'; // Import the custom AppBar
 
 class ForgotPasswordPage extends StatefulWidget {
   final VoidCallback onToggleTheme;
 
   const ForgotPasswordPage({super.key, required this.onToggleTheme});
-  
+
   @override
   ForgotPasswordPageState createState() => ForgotPasswordPageState();
 }
@@ -29,14 +30,17 @@ class ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
   Future<void> _resetPassword() async {
     try {
-      await FirebaseAuth.instance.sendPasswordResetEmail(email: _emailController.text.trim());
+      await FirebaseAuth.instance
+          .sendPasswordResetEmail(email: _emailController.text.trim());
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Password reset email sent')));
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Password reset email sent')));
         Navigator.pushReplacementNamed(context, '/login');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to send reset email: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to send reset email: $e')));
       }
     }
   }
@@ -44,7 +48,8 @@ class ForgotPasswordPageState extends State<ForgotPasswordPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(title: 'Forgot Password', onToggleTheme: widget.onToggleTheme),
+      appBar: CustomAppBar(
+          title: 'Forgot Password', onToggleTheme: widget.onToggleTheme),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -73,7 +78,8 @@ class ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     try {
                       await _resetPassword();
                     } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to send reset email: $e')));
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text('Failed to send reset email: $e')));
                     }
                   }
                 },

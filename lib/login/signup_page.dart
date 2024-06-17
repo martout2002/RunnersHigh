@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'custom_app_bar.dart'; // Import the custom AppBar
+import 'package:runners_high/appbar/custom_app_bar.dart'; // Import the custom AppBar
 import 'dart:developer';
 
 class SignUpPage extends StatefulWidget {
@@ -39,11 +39,11 @@ class SignUpPageState extends State<SignUpPage> {
     });
 
     try {
-      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      UserCredential userCredential =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
-
 
       // Send email verification
       if (userCredential.user != null && !userCredential.user!.emailVerified) {
@@ -53,7 +53,8 @@ class SignUpPageState extends State<SignUpPage> {
           context: context,
           builder: (context) => AlertDialog(
             title: const Text('Verify your email'),
-            content: const Text('A verification link has been sent to your email. Please verify your email before logging in.'),
+            content: const Text(
+                'A verification link has been sent to your email. Please verify your email before logging in.'),
             actions: [
               TextButton(
                 onPressed: () {
@@ -93,20 +94,21 @@ class SignUpPageState extends State<SignUpPage> {
     } catch (e) {
       log(e.toString());
     } finally {
-      
       setState(() {
         _isLoading = false;
       });
     }
     if (!mounted) {
-        return;
+      return;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(title: 'Sign Up', onToggleTheme: widget.onToggleTheme), // Use the custom AppBar
+      appBar: CustomAppBar(
+          title: 'Sign Up',
+          onToggleTheme: widget.onToggleTheme), // Use the custom AppBar
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

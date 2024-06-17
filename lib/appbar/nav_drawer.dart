@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:runners_high/home_page.dart';
-import 'run_history_page.dart';
-import 'UserProfilePage.dart';
+import '../running/run_history_page.dart';
+import '../UserProfilePage.dart';
 
 class NavDrawer extends StatelessWidget {
   const NavDrawer({super.key});
@@ -64,7 +64,7 @@ class NavDrawer extends StatelessWidget {
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (context) => HomePage(onToggleTheme: () {  }),
+                  builder: (context) => HomePage(onToggleTheme: () {}),
                 ),
               );
             },

@@ -4,8 +4,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:runners_high/nav_drawer.dart';
-import 'custom_app_bar.dart';
+import 'package:runners_high/appbar/nav_drawer.dart';
+import 'package:runners_high/appbar/custom_app_bar.dart';
 
 class RunTrackingPage extends StatefulWidget {
   final VoidCallback onToggleTheme;
@@ -65,7 +65,8 @@ class RunTrackingPageState extends State<RunTrackingPage> {
   }
 
   Future<void> _getCurrentLocationAndSetMap() async {
-    Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
     setState(() {
       _lastPosition = position;
     });
@@ -123,7 +124,8 @@ class RunTrackingPageState extends State<RunTrackingPage> {
 
   Future<void> _initializeGoogleMapsAndStartTracking() async {
     await Geolocator.requestPermission();
-    Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
     setState(() {
       _lastPosition = position;
     });
@@ -132,16 +134,18 @@ class RunTrackingPageState extends State<RunTrackingPage> {
         LatLng(_lastPosition!.latitude, _lastPosition!.longitude),
       ));
     }
-    _positionStreamSubscription = Geolocator.getPositionStream().listen((Position position) {
+    _positionStreamSubscription =
+        Geolocator.getPositionStream().listen((Position position) {
       if (_isRecording && !_isPaused) {
         setState(() {
           if (_lastPosition != null) {
             _distance += Geolocator.distanceBetween(
-              _lastPosition!.latitude,
-              _lastPosition!.longitude,
-              position.latitude,
-              position.longitude,
-            ) / 1000; // Convert meters to kilometers
+                  _lastPosition!.latitude,
+                  _lastPosition!.longitude,
+                  position.latitude,
+                  position.longitude,
+                ) /
+                1000; // Convert meters to kilometers
           }
           _lastPosition = position;
           _route.add(LatLng(position.latitude, position.longitude));
@@ -162,7 +166,10 @@ class RunTrackingPageState extends State<RunTrackingPage> {
           'distance': _distance,
           'duration': _duration.inSeconds,
           'pace': _pace,
-          'route': _route.map((latLng) => {'lat': latLng.latitude, 'lng': latLng.longitude}).toList(),
+          'route': _route
+              .map(
+                  (latLng) => {'lat': latLng.latitude, 'lng': latLng.longitude})
+              .toList(),
           'timestamp': DateTime.now().toIso8601String(),
         };
         _runRef?.push().set(run);
@@ -237,7 +244,8 @@ class RunTrackingPageState extends State<RunTrackingPage> {
               }
             },
             initialCameraPosition: const CameraPosition(
-              target: LatLng(0, 0), // Placeholder, will be updated to user's location
+              target: LatLng(
+                  0, 0), // Placeholder, will be updated to user's location
               zoom: 12,
             ),
             myLocationEnabled: true, // Enable the user's location
@@ -264,9 +272,12 @@ class RunTrackingPageState extends State<RunTrackingPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildStatCard('Distance', '${_distance.toStringAsFixed(2)} km'),
-                      _buildStatCard('Pace', '${_pace.toStringAsFixed(2)} min/km'),
-                      _buildStatCard('Duration', _duration.toString().split('.').first),
+                      _buildStatCard(
+                          'Distance', '${_distance.toStringAsFixed(2)} km'),
+                      _buildStatCard(
+                          'Pace', '${_pace.toStringAsFixed(2)} min/km'),
+                      _buildStatCard(
+                          'Duration', _duration.toString().split('.').first),
                     ],
                   ),
                   const SizedBox(height: 10),

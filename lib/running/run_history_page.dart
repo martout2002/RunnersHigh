@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'custom_app_bar.dart';
-import 'nav_drawer.dart';
+import 'package:runners_high/appbar/custom_app_bar.dart';
+import '../appbar/nav_drawer.dart';
 
 class RunHistoryPage extends StatefulWidget {
   final VoidCallback onToggleTheme;
@@ -26,12 +26,16 @@ class _RunHistoryPageState extends State<RunHistoryPage> {
   void _initializeRunData() {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      final runRef = FirebaseDatabase.instance.ref().child('runs').child(user.uid);
+      final runRef =
+          FirebaseDatabase.instance.ref().child('runs').child(user.uid);
       runRef.onValue.listen((event) {
         if (event.snapshot.value != null) {
           final data = Map<String, dynamic>.from(event.snapshot.value as Map);
           setState(() {
-            _pastRuns = data.keys.map((key) => {'key': key, ...Map<String, dynamic>.from(data[key])}).toList();
+            _pastRuns = data.keys
+                .map((key) =>
+                    {'key': key, ...Map<String, dynamic>.from(data[key])})
+                .toList();
           });
         } else {
           // Log when there's no data
@@ -50,7 +54,8 @@ class _RunHistoryPageState extends State<RunHistoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(title: 'Run History', onToggleTheme: widget.onToggleTheme),
+      appBar: CustomAppBar(
+          title: 'Run History', onToggleTheme: widget.onToggleTheme),
       drawer: const NavDrawer(),
       body: _pastRuns.isEmpty
           ? Center(child: Text('No runs available'))
@@ -67,8 +72,8 @@ class _RunHistoryPageState extends State<RunHistoryPage> {
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) =>
-                            RunDetailsPage(run: run, onToggleTheme: widget.onToggleTheme),
+                        builder: (context) => RunDetailsPage(
+                            run: run, onToggleTheme: widget.onToggleTheme),
                       ),
                     ),
                   ),
@@ -83,7 +88,8 @@ class RunDetailsPage extends StatelessWidget {
   final Map<String, dynamic> run;
   final VoidCallback onToggleTheme;
 
-  const RunDetailsPage({super.key, required this.run, required this.onToggleTheme});
+  const RunDetailsPage(
+      {super.key, required this.run, required this.onToggleTheme});
 
   @override
   Widget build(BuildContext context) {
@@ -92,7 +98,8 @@ class RunDetailsPage extends StatelessWidget {
         .toList();
 
     return Scaffold(
-      appBar: CustomAppBar(title: run['name'] ?? 'Run Details', onToggleTheme: onToggleTheme),
+      appBar: CustomAppBar(
+          title: run['name'] ?? 'Run Details', onToggleTheme: onToggleTheme),
       body: Column(
         children: [
           Expanded(
@@ -115,9 +122,12 @@ class RunDetailsPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Distance: ${run['distance']} km', style: const TextStyle(fontSize: 18)),
-                Text('Duration: ${run['duration']} seconds', style: const TextStyle(fontSize: 18)),
-                Text('Pace: ${run['pace']} min/km', style: const TextStyle(fontSize: 18)),
+                Text('Distance: ${run['distance']} km',
+                    style: const TextStyle(fontSize: 18)),
+                Text('Duration: ${run['duration']} seconds',
+                    style: const TextStyle(fontSize: 18)),
+                Text('Pace: ${run['pace']} min/km',
+                    style: const TextStyle(fontSize: 18)),
               ],
             ),
           ),

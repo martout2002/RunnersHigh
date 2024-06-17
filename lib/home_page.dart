@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:runners_high/nav_drawer.dart';
+import 'package:runners_high/appbar/nav_drawer.dart';
 import 'services/gemini_api.dart';
-import 'custom_app_bar.dart';
+import 'package:runners_high/appbar/custom_app_bar.dart';
 import 'widgets/progress_indicator.dart';
 import 'widgets/recommendation_widget.dart';
 import 'widgets/floating_action_button.dart';
@@ -47,7 +47,8 @@ class HomePageState extends State<HomePage> {
   void _checkOnboardingStatus() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      final userRef = FirebaseDatabase.instance.ref().child('profiles').child(user.uid);
+      final userRef =
+          FirebaseDatabase.instance.ref().child('profiles').child(user.uid);
       userRef.get().then((snapshot) {
         if (snapshot.exists) {
           final data = Map<String, dynamic>.from(snapshot.value as Map);
@@ -76,13 +77,17 @@ class HomePageState extends State<HomePage> {
   void _initializeRunData() {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      final runRef = FirebaseDatabase.instance.ref().child('runs').child(user.uid);
+      final runRef =
+          FirebaseDatabase.instance.ref().child('runs').child(user.uid);
       runRef.onValue.listen((event) {
         if (event.snapshot.value != null) {
           final data = Map<String, dynamic>.from(event.snapshot.value as Map);
           if (mounted) {
             setState(() {
-              _pastRuns = data.keys.map((key) => {'key': key, ...Map<String, dynamic>.from(data[key])}).toList();
+              _pastRuns = data.keys
+                  .map((key) =>
+                      {'key': key, ...Map<String, dynamic>.from(data[key])})
+                  .toList();
             });
           }
           _fetchRunRecommendation();
@@ -101,7 +106,8 @@ class HomePageState extends State<HomePage> {
       if (timestamp.isAfter(oneWeekAgo)) {
         if (mounted) {
           setState(() {
-            _runRecommendation = Map<String, dynamic>.from(storedRecommendation['recommendation']);
+            _runRecommendation = Map<String, dynamic>.from(
+                storedRecommendation['recommendation']);
           });
         }
         return;
@@ -110,17 +116,23 @@ class HomePageState extends State<HomePage> {
 
     String? recommendation;
     if (_pastRuns.isEmpty) {
-      recommendation = await _geminiService.getRunRecommendationBasedOnGoal(_userGoal, _userPace);
+      recommendation = await _geminiService.getRunRecommendationBasedOnGoal(
+          _userGoal, _userPace);
     } else {
-      final userHistory = _pastRuns.map((run) => "Run on ${run['date']}: ${run['distance']} meters at ${run['pace']} pace").join("\n");
-      recommendation = await _geminiService.getRunRecommendation(userHistory, _userGoal, _userPace);
+      final userHistory = _pastRuns
+          .map((run) =>
+              "Run on ${run['date']}: ${run['distance']} meters at ${run['pace']} pace")
+          .join("\n");
+      recommendation = await _geminiService.getRunRecommendation(
+          userHistory, _userGoal, _userPace);
     }
 
     if (recommendation != null) {
       await _geminiService.storeRecommendation(recommendation);
       if (mounted) {
         setState(() {
-          _runRecommendation = _geminiService.processRecommendation(recommendation!);
+          _runRecommendation =
+              _geminiService.processRecommendation(recommendation!);
         });
       }
     }
@@ -129,14 +141,17 @@ class HomePageState extends State<HomePage> {
   Future<void> _regenerateRunRecommendation() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      String? newRecommendation = await _geminiService.getRunRecommendationBasedOnGoal(_userGoal, _userPace);
+      String? newRecommendation = await _geminiService
+          .getRunRecommendationBasedOnGoal(_userGoal, _userPace);
       if (newRecommendation != null) {
-        final newRecommendationData = _geminiService.processRecommendation(newRecommendation);
+        final newRecommendationData =
+            _geminiService.processRecommendation(newRecommendation);
         await _geminiService.storeRecommendation(newRecommendation);
         setState(() {
           _runRecommendation = newRecommendationData;
         });
-        final userRef = FirebaseDatabase.instance.ref().child('profiles').child(user.uid);
+        final userRef =
+            FirebaseDatabase.instance.ref().child('profiles').child(user.uid);
         await userRef.child('recommendation').set(newRecommendationData);
       }
     }
@@ -145,16 +160,19 @@ class HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(title: 'Run Tracker', onToggleTheme: widget.onToggleTheme),
+      appBar: CustomAppBar(
+          title: 'Run Tracker', onToggleTheme: widget.onToggleTheme),
       drawer: const NavDrawer(),
       body: Column(
         children: [
-          ProgressIndicatorWidget(runRecommendation: _runRecommendation, pastRuns: _pastRuns),
+          ProgressIndicatorWidget(
+              runRecommendation: _runRecommendation, pastRuns: _pastRuns),
           if (_runRecommendation != null)
             Flexible(
               fit: FlexFit.tight,
               child: Padding(
-                padding: const EdgeInsets.only(bottom: 85.0), // Adjust the padding as needed
+                padding: const EdgeInsets.only(
+                    bottom: 85.0), // Adjust the padding as needed
                 child: RecommendationWidget(
                   recommendation: _runRecommendation!,
                   pastRuns: _pastRuns,
@@ -179,7 +197,8 @@ class HomePageState extends State<HomePage> {
           Positioned(
             right: 16.0,
             bottom: 16.0,
-            child: CustomFloatingActionButton(onToggleTheme: widget.onToggleTheme),
+            child:
+                CustomFloatingActionButton(onToggleTheme: widget.onToggleTheme),
           ),
         ],
       ),

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import '../run_tracking_page.dart';
+import '../running/run_tracking_page.dart';
 
 class CustomFloatingActionButton extends StatelessWidget {
   final VoidCallback onToggleTheme;
 
-  const CustomFloatingActionButton({Key? key, required this.onToggleTheme}) : super(key: key);
+  const CustomFloatingActionButton({Key? key, required this.onToggleTheme})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
