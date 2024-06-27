@@ -6,6 +6,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:runners_high/appbar/custom_app_bar.dart';
 import '../appbar/nav_drawer.dart';
+import 'dart:developer';
 
 class RunHistoryPage extends StatefulWidget {
   final VoidCallback onToggleTheme;
@@ -46,15 +47,15 @@ class _RunHistoryPageState extends State<RunHistoryPage> {
           });
         } else {
           // Log when there's no data
-          print("No run data available");
+          log("No run data available");
         }
       }, onError: (error) {
         // Log any errors
-        print("Error fetching run data: $error");
+        log("Error fetching run data: $error");
       });
     } else {
       // Log when the user is null
-      print("User is null");
+      log("User is null");
     }
   }
 
@@ -74,7 +75,7 @@ class _RunHistoryPageState extends State<RunHistoryPage> {
           title: 'Run History', onToggleTheme: widget.onToggleTheme),
       drawer: const NavDrawer(),
       body: _pastRuns.isEmpty
-          ? Center(child: Text('No runs available'))
+          ? const Center(child: Text('No runs available'))
           : ListView.builder(
               itemCount: _pastRuns.length,
               itemBuilder: (context, index) {
@@ -88,7 +89,7 @@ class _RunHistoryPageState extends State<RunHistoryPage> {
                       : null,
                     title: Text('${run['name'] ?? 'Unnamed Run'}'),
                     subtitle: Text(
-                        'Distance: ${run['distance']} km\nTime: ${run['duration'].floor()}m : ${((run['duration'] % 1) * 60).round().toString().padLeft(2, '0')}s \nPace: ${run['pace'].floor()}:${((run['pace'] % 1) * 60).round().toString().padLeft(2, '0')}  min/km', style: TextStyle(fontSize: 14),),
+                        'Distance: ${run['distance']} km\nTime: ${run['duration'].floor()}m : ${((run['duration'] % 1) * 60).round().toString().padLeft(2, '0')}s \nPace: ${run['pace'].floor()}:${((run['pace'] % 1) * 60).round().toString().padLeft(2, '0')}  min/km', style: const TextStyle(fontSize: 14),),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -104,7 +105,8 @@ class _RunHistoryPageState extends State<RunHistoryPage> {
   }
 }
 
-class RunDetailsPage extends StatelessWidget {
+//TODO: Change the rundetailspage into a stateful widget
+class RunDetailsPage extends StatefulWidget {
   final Map<String, dynamic> run;
   final VoidCallback onToggleTheme;
 
@@ -112,14 +114,25 @@ class RunDetailsPage extends StatelessWidget {
       {super.key, required this.run, required this.onToggleTheme});
 
   @override
-  Widget build(BuildContext context) {
-    final List<LatLng> route = (run['route'] as List<dynamic>)
+  _RunDetailsPageState createState() => _RunDetailsPageState();
+}
+
+class _RunDetailsPageState extends State<RunDetailsPage> {
+  late List<LatLng> route;
+
+  @override
+  void initState() {
+    super.initState();
+    route = (widget.run['route'] as List<dynamic>)
         .map((point) => LatLng(point['lat'], point['lng']))
         .toList();
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
-          title: run['name'] ?? 'Run Details', onToggleTheme: onToggleTheme),
+          title: widget.run['name'] ?? 'Run Details', onToggleTheme: widget.onToggleTheme),
       body: Column(
         children: [
           Expanded(
@@ -142,11 +155,11 @@ class RunDetailsPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Distanced: ${run['distance']} km',
+                Text('Distanced: ${widget.run['distance']} km',
                     style: const TextStyle(fontSize: 18)),
-                Text('Duration: ${run['duration']} minutes',
+                Text('Duration: ${widget.run['duration']} minutes',
                     style: const TextStyle(fontSize: 18)),
-                Text('Pace: ${run['pace']} min/km',
+                Text('Pace: ${widget.run['pace']} min/km',
                     style: const TextStyle(fontSize: 18)),
               ],
             ),
