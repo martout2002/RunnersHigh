@@ -12,9 +12,22 @@ class FriendPage extends StatefulWidget {
 }
 
 class FriendPageState extends State<FriendPage> {
-  var friends;
+  List<Map<dynamic, dynamic>> friends = [];
 
-  void init_data() {
+  Future<Map<dynamic, dynamic>>? _getFriendData(String code) async {
+    Map<dynamic, dynamic> friendData = {} as Map<dynamic, dynamic>;
+    final ref = FirebaseDatabase.instance.ref().child('profiles').child(code);
+    final snapshot = await ref.once();
+    if (snapshot.snapshot.value != null) {
+      final data = Map<dynamic, dynamic>.from(snapshot.snapshot.value as Map);
+      friendData = data;
+    } else {
+      print("No user data available");
+    }
+    return friendData;
+  }
+
+  void init_data() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       final ref =
@@ -22,9 +35,22 @@ class FriendPageState extends State<FriendPage> {
       ref.onValue.listen((event) {
         if (event.snapshot.value != null) {
           final data = Map<String, dynamic>.from(event.snapshot.value as Map);
-          setState(() {
-            friends = data['friends'];
-          });
+          final friendsData = data['friends'];
+          if (friendsData != null && friendsData is Map) {
+            setState(() {
+              friends = friendsData.keys
+                  .map((key) => {
+                        'key': key,
+                        // Safely cast each friend data to Map<String, dynamic>, handling potential nulls
+                        ...((friendsData[key] is Map)
+                            ? Map<String, dynamic>.from(friendsData[key])
+                            : {'code': friendsData[key]})
+                      })
+                  .toList();
+            });
+          }
+
+          print(friends);
         } else {
           print("No user data available");
         }
@@ -33,8 +59,13 @@ class FriendPageState extends State<FriendPage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    init_data();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    var friends;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Friend Page'),
@@ -62,12 +93,38 @@ class FriendPageState extends State<FriendPage> {
         ],
       ),
       body: Center(
-          child: friends == null
-              ? Text('Time to get friends')
+          child: friends.isEmpty
+              ? const Text('Time to get friends')
               : ListView.builder(
                   itemCount: friends.length,
                   itemBuilder: (context, index) {
-                    // return friend item widget here
+                    final friend = friends[index];
+                    return FutureBuilder<Map<dynamic, dynamic>>(
+                      future: _getFriendData(friend['code']),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return CircularProgressIndicator();
+                        } else if (snapshot.hasError) {
+                          return Text('Error: ${snapshot.error}');
+                        } else {
+                          var friendData = snapshot.data!;
+                          print(friendData);
+
+                          return Card(
+                              margin: const EdgeInsets.all(10.0),
+                              child: ListTile(
+                                  leading: const CircleAvatar(
+                                      foregroundImage:
+                                          AssetImage("assets/images/pfp.jpg"),
+                                      radius: 35),
+                                  title: Text(friendData['username'],
+                                      style: const TextStyle(fontSize: 20)),
+                                  subtitle: Text(
+                                      '${friendData['num_of_runs']} runs completed \n${friendData['total_distance']} km ran')));
+                        }
+                      },
+                    );
                   },
                   // If the person has no friends, display a text saying "Time to get friends"
                 )),
