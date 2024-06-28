@@ -24,6 +24,7 @@ class FriendPageState extends State<FriendPage> {
     } else {
       print("No user data available");
     }
+    print("friends data found: $friendData");
     return friendData;
   }
 
@@ -32,24 +33,33 @@ class FriendPageState extends State<FriendPage> {
     if (user != null) {
       final ref =
           FirebaseDatabase.instance.ref().child('profiles').child(user.uid);
-      ref.onValue.listen((event) {
-        if (event.snapshot.value != null) {
-          final data = Map<String, dynamic>.from(event.snapshot.value as Map);
+      ref.onValue.listen((event) async {
+        final eventValue = event.snapshot.value;
+        if (eventValue != null) {
+          final data = Map<dynamic, dynamic>.from(eventValue as Map);
           final friendsData = data['friends'];
-          if (friendsData != null && friendsData is Map) {
+          print(data['friends']);
+          if (friendsData != null) {
+            print("jode");
+            List<Map<dynamic, dynamic>> tempFriends = [];
+            for (var g in friendsData.values) {
+              print(g);
+              //var friendData = await _getFriendData(g);
+              // if (friendData != null) {
+              //   tempFriends.add({
+              //     'key': g,
+              //     'value': friendData,
+              //   });
+              // }
+              tempFriends.add({
+                'code': g,
+              });
+            }
+
             setState(() {
-              friends = friendsData.keys
-                  .map((key) => {
-                        'key': key,
-                        // Safely cast each friend data to Map<String, dynamic>, handling potential nulls
-                        ...((friendsData[key] is Map)
-                            ? Map<String, dynamic>.from(friendsData[key])
-                            : {'code': friendsData[key]})
-                      })
-                  .toList();
+              friends = tempFriends;
             });
           }
-
           print(friends);
         } else {
           print("No user data available");
@@ -109,7 +119,7 @@ class FriendPageState extends State<FriendPage> {
                           return Text('Error: ${snapshot.error}');
                         } else {
                           var friendData = snapshot.data!;
-                          print(friendData);
+                          print("friends $friendData");
 
                           return Card(
                               margin: const EdgeInsets.all(10.0),
