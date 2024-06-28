@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -12,63 +13,44 @@ class UserProfilePage extends StatefulWidget {
 }
 
 class _UserProfilePageState extends State<UserProfilePage> {
-  final user = FirebaseAuth.instance.currentUser;
-  var name = 'no_name_error';
+  
+  var name = "";
   var num_of_runs = 0;
   var age = 0;
-  var exp = 'no_exp_error';
-  var goal = 'no_goal_error';
+  var exp ="err";
+  var goal ="err";
 
-  DatabaseReference? ref;
+  // DatabaseReference? ref;
 
+
+  void _getUserData() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final ref = FirebaseDatabase.instance.ref().child('profiles').child(user.uid);
+      ref.onValue.listen((event) {
+        if (event.snapshot.value != null) {
+          final data = Map<String, dynamic>.from(event.snapshot.value as Map);
+          setState(() {
+            name = data['name'];
+            num_of_runs = data['num_of_runs'];
+            age = data['age'];
+            exp = data['experience'];
+            goal = data['goal'];  
+          });
+        } else {
+          print("No user data available");
+        }
+      });
+    }
+  }
 
   @override
   void initState() {
     super.initState();
-    ref = FirebaseDatabase.instance.ref().child('profiles').child(user!.uid);
-    var ref_runs = FirebaseDatabase.instance.ref().child('runs').child(user!.uid);
-    // grabbing realtime database details for profile
-    // name
-    ref?.child('name').get().then((DataSnapshot? snapshot) {
-      if (snapshot != null) {
-        setState(() {
-          name = snapshot.value.toString();
-        });
-      } 
-    });
-    // number of runs
-    ref_runs.child('num_of_runs').get().then((DataSnapshot? snapshot) {
-      if (snapshot != null) {
-        setState(() {
-          num_of_runs = snapshot.children.length;
-        });
-      } 
-    });
-    // age
-    ref?.child('age').get().then((DataSnapshot? snapshot) {
-      if (snapshot != null) {
-        setState(() {
-          age = snapshot.value as int;
-        });
-      } 
-    });
-    // experience
-    ref?.child('experience').get().then((DataSnapshot? snapshot) {
-      if (snapshot != null) {
-        setState(() {
-          exp = snapshot.value.toString();
-        });
-      } 
-    });
-    // goal
-    ref?.child('goal').get().then((DataSnapshot? snapshot) {
-      if (snapshot != null) {
-        setState(() {
-          goal = snapshot.value.toString();
-        });
-      } 
-    });
+    _getUserData();
   }
+
+  
   //testing user git push on mac
   @override
 Widget build(BuildContext context) {

@@ -22,6 +22,7 @@ class RunTrackingPage extends StatefulWidget {
 }
 
 class RunTrackingPageState extends State<RunTrackingPage> {
+  var num_of_runs = 0;
   bool _isRecording = false;
   bool _isPaused = false;
   double _distance = 0.0;
@@ -165,20 +166,28 @@ class RunTrackingPageState extends State<RunTrackingPage> {
   Future<void> _saveRun() async {
   if (_user != null) {
     String? runName = await _showRunNameDialog();
+    final ref = FirebaseDatabase.instance.ref().child('profiles').child(_user!.uid);
+    if (ref != null) {
+      ref.onValue.listen((event) {
+        if (event.snapshot.value != null) {
+          final data = Map<String, dynamic>.from(event.snapshot.value as Map);
+          //update user profile num of runs
+          ref.update({'num_of_runs': data['num_of_runs'] + 1});
+        } else {
+          print("No user data available");
+        }
+      });
+    }
     if (runName != null) {
-      print("a");
       
       String? imageString;
       // Take a snapshot of the map
       final Uint8List? mapSnapshot = await _mapController?.takeSnapshot();
       File? imageFile;
-      print("b");
       if (mapSnapshot != null) {
-        print("c");
         // Get the path to the app's temporary directory
         final Directory tempDir = await getTemporaryDirectory();
         final String tempPath = tempDir.path;
-        print("agy");
         // Compress the image
         final Uint8List compressedImage = await FlutterImageCompress.compressWithList(
           mapSnapshot,
@@ -186,8 +195,6 @@ class RunTrackingPageState extends State<RunTrackingPage> {
           minHeight: 800,
           quality: 88,
         );
-
-        print("d");
 
         // Write the image to a file
         imageFile = File('$tempPath/map_snapshot.png');
@@ -219,7 +226,6 @@ class RunTrackingPageState extends State<RunTrackingPage> {
         'timestamp': DateTime.now().toIso8601String(),
         'image': imageString,
       };
-      print("donge pushing");
       _runRef?.push().set(run);
     }
     if (mounted) {
