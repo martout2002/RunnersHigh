@@ -18,6 +18,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   var age = 0;
   var exp = "err";
   var goal = "err";
+  var total_km = 0.0;
 
   // DatabaseReference? ref;
 
@@ -35,6 +36,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
             age = data['age'];
             exp = data['experience'];
             goal = data['goal'];
+            total_km = data['total_distance'];
           });
         } else {
           print("No user data available");
@@ -83,7 +85,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                         ),
                       ),
                       Text(
-                        exp,
+                        "$total_km km",
                         style: const TextStyle(
                           fontSize: 16,
                           color: Colors.grey,

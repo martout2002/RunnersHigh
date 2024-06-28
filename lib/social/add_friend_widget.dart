@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 class AddFriendWidget extends StatelessWidget {
   final TextEditingController _usernameController = TextEditingController();
 
+// write function to add friends here
+
+// write a function to send friend request here ( send user unique id)
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(

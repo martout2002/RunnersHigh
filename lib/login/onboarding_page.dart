@@ -12,6 +12,7 @@ class OnboardingPage extends StatefulWidget {
 
 class OnboardingPageState extends State<OnboardingPage> {
   final _formKey = GlobalKey<FormState>();
+  final _UsernameController = TextEditingController();
   final _nameController = TextEditingController();
   final _ageController = TextEditingController();
   final _paceController = TextEditingController();
@@ -19,6 +20,22 @@ class OnboardingPageState extends State<OnboardingPage> {
   String? _selectedGender;
   String? _selectedExperience;
   bool _isLoading = false;
+
+  Future<bool> isUsernameUnique(String username) async {
+    final user = FirebaseAuth.instance.currentUser;
+    bool isUnique = true;
+    if (user != null) {
+      final ref = FirebaseDatabase.instance.ref().child('profiles');
+      DataSnapshot snapshot = (await ref.once()) as DataSnapshot;
+      Map<dynamic, dynamic>? values = snapshot.value as Map<dynamic, dynamic>?;
+      values?.forEach((key, value) {
+        if (value['username'] == username) {
+          isUnique = false;
+        }
+      });
+    }
+    return isUnique; // Add a default return statement
+  }
 
   final PageController _pageController = PageController();
 
@@ -34,12 +51,14 @@ class OnboardingPageState extends State<OnboardingPage> {
 
   void _nextPage() {
     if (_formKey.currentState!.validate()) {
-      _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.ease);
+      _pageController.nextPage(
+          duration: const Duration(milliseconds: 300), curve: Curves.ease);
     }
   }
 
   void _previousPage() {
-    _pageController.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.ease);
+    _pageController.previousPage(
+        duration: const Duration(milliseconds: 300), curve: Curves.ease);
   }
 
   Future<void> _submit() async {
@@ -52,14 +71,24 @@ class OnboardingPageState extends State<OnboardingPage> {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        DatabaseReference ref = FirebaseDatabase.instance.ref().child('profiles').child(user.uid);
+        DatabaseReference ref =
+            FirebaseDatabase.instance.ref().child('profiles').child(user.uid);
         await ref.set({
+          'username': _UsernameController.text.trim(),
           'name': _nameController.text.trim(),
           'age': int.parse(_ageController.text.trim()),
           'gender': _selectedGender,
           'experience': _selectedExperience,
           'goal': _goalController.text.trim(),
           'pace': _paceController.text.trim(),
+          'num_of_runs': 0,
+          'friends': {
+            'friend1': 'b7XBuFwL2PPvUhMzTOWKwe0oWV73',
+          },
+          'friend_req': {
+            'req1': 'b7XBuFwL2PPvUhMzTOWKwe0oWV73',
+          },
+          'total_distance': 0.0,
         });
         if (mounted) {
           Navigator.pushReplacementNamed(context, '/home');
@@ -88,6 +117,7 @@ class OnboardingPageState extends State<OnboardingPage> {
                   controller: _pageController,
                   physics: const NeverScrollableScrollPhysics(),
                   children: [
+                    _buildUserNamePage(),
                     _buildNamePage(),
                     _buildAgePage(),
                     _buildGenderPage(),
@@ -98,6 +128,35 @@ class OnboardingPageState extends State<OnboardingPage> {
                 ),
               ),
       ),
+    );
+  }
+
+  Widget _buildUserNamePage() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        TextFormField(
+          controller: _UsernameController,
+          decoration: const InputDecoration(labelText: 'Username'),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter your username';
+            }
+            return null;
+          },
+        ),
+        const SizedBox(height: 20),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const SizedBox(width: 60), // Empty space to align buttons
+            ElevatedButton(
+              onPressed: _nextPage,
+              child: const Text('Next'),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -173,10 +232,12 @@ class OnboardingPageState extends State<OnboardingPage> {
         DropdownButtonFormField<String>(
           value: _selectedGender,
           decoration: const InputDecoration(labelText: 'Gender'),
-          items: ['Male', 'Female', 'Other'].map((label) => DropdownMenuItem(
-            value: label,
-            child: Text(label),
-          )).toList(),
+          items: ['Male', 'Female', 'Other']
+              .map((label) => DropdownMenuItem(
+                    value: label,
+                    child: Text(label),
+                  ))
+              .toList(),
           onChanged: (value) {
             setState(() {
               _selectedGender = value;
@@ -214,10 +275,12 @@ class OnboardingPageState extends State<OnboardingPage> {
         DropdownButtonFormField<String>(
           value: _selectedExperience,
           decoration: const InputDecoration(labelText: 'Running Experience'),
-          items: ['Beginner', 'Intermediate', 'Advanced'].map((label) => DropdownMenuItem(
-            value: label,
-            child: Text(label),
-          )).toList(),
+          items: ['Beginner', 'Intermediate', 'Advanced']
+              .map((label) => DropdownMenuItem(
+                    value: label,
+                    child: Text(label),
+                  ))
+              .toList(),
           onChanged: (value) {
             setState(() {
               _selectedExperience = value;
@@ -286,7 +349,8 @@ class OnboardingPageState extends State<OnboardingPage> {
       children: [
         TextFormField(
           controller: _paceController,
-          decoration: const InputDecoration(labelText: 'Comfortable Pace (min/km)'),
+          decoration:
+              const InputDecoration(labelText: 'Comfortable Pace (min/km)'),
           keyboardType: TextInputType.number,
           validator: (value) {
             if (value == null || value.isEmpty) {
