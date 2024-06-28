@@ -22,6 +22,10 @@ class RunTrackingPage extends StatefulWidget {
 }
 
 class RunTrackingPageState extends State<RunTrackingPage> {
+  var minLat;
+  var maxLat;
+  var minLng;
+  var maxLng;
   late StreamSubscription userStreamSubscription;
   var num_of_runs = 0;
   bool _isRecording = false;
@@ -76,6 +80,10 @@ class RunTrackingPageState extends State<RunTrackingPage> {
         desiredAccuracy: LocationAccuracy.high);
     setState(() {
       _lastPosition = position;
+      minLat = position.latitude;
+      maxLat = position.latitude;
+      minLng = position.longitude;
+      maxLng = position.longitude;
     });
     if (_mapController != null && _lastPosition != null) {
       _mapController!.animateCamera(CameraUpdate.newLatLng(
@@ -154,6 +162,11 @@ class RunTrackingPageState extends State<RunTrackingPage> {
                 ) /
                 1000; // Convert meters to kilometers
           }
+          if (position.latitude < minLat) minLat = position.latitude;
+          if (position.latitude > maxLat) maxLat = position.latitude;
+          if (position.longitude < minLng) minLng = position.longitude;
+          if (position.longitude > maxLng) maxLng = position.longitude;
+
           _lastPosition = position;
           _route.add(LatLng(position.latitude, position.longitude));
           if (_distance > 0) {
@@ -187,11 +200,18 @@ class RunTrackingPageState extends State<RunTrackingPage> {
 
   Future<void> _saveRun() async {
     if (_lastPosition != null && _mapController != null) {
-      _mapController!
-          .animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
-        target: LatLng(_lastPosition!.latitude, _lastPosition!.longitude),
-        zoom: 18.0, // Adjust the zoom level as needed
-      )));
+      LatLngBounds bounds = LatLngBounds(
+        southwest: LatLng(minLat, minLng),
+        northeast: LatLng(maxLat, maxLng),
+      );
+      // _mapController!
+      //     .animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
+      //   target: LatLng(_lastPosition!.latitude, _lastPosition!.longitude),
+      //   zoom: 18.0, // Adjust the zoom level as needed
+      // )));
+      CameraUpdate update =
+          CameraUpdate.newLatLngBounds(bounds, 50); // 50 is the padding
+      _mapController!.animateCamera(update);
     }
     if (_user != null) {
       String? runName = await _showRunNameDialog();
@@ -314,7 +334,7 @@ class RunTrackingPageState extends State<RunTrackingPage> {
             initialCameraPosition: const CameraPosition(
               target: LatLng(
                   0, 0), // Placeholder, will be updated to user's location
-              zoom: 12,
+              zoom: 20,
             ),
             myLocationEnabled: true, // Enable the user's location
             myLocationButtonEnabled: true,

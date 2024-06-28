@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:runners_high/UserProfilePage.dart';
+import 'package:runners_high/social/friend_page.dart';
 import 'home_page.dart';
 import 'login/login_page.dart';
 import 'login/signup_page.dart';
@@ -73,6 +74,7 @@ class MyAppState extends State<MyApp> {
         '/profile': (context) => const UserProfilePage(),
         '/forgotPassword': (context) =>
             ForgotPasswordPage(onToggleTheme: _toggleTheme),
+        '/friends': (context) => FriendPage(),
       },
     );
   }
