@@ -4,7 +4,8 @@
     <application
         android:label="runners_high"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:enableOnBackInvokedCallback="true"> <!-- Add this line -->
         
         <activity
             android:name=".MainActivity"
@@ -37,7 +38,7 @@
             android:value="2" />
         <meta-data 
         android:name= "com.google.android.geo.API_KEY"
-        android:value="AIzaSyDnW67GMZiSbzGwuvwwHRRZNsmyUOkl9_I"/>
+        android:value="AIzaSyB_GClA-voNprzpNJySMUg3ArsJldWBpNI"/>
         
 
     </application>

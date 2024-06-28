@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:runners_high/appbar/custom_app_bar.dart';
-import '../appbar/customAppBar.dart'; // Import the custom AppBar
 
 class ForgotPasswordPage extends StatefulWidget {
   final VoidCallback onToggleTheme;

@@ -27,11 +27,6 @@ class NavDrawer extends StatelessWidget {
             ),
           ),
           ListTile(
-            leading: const Icon(Icons.input),
-            title: const Text('Welcome'),
-            onTap: () => {},
-          ),
-          ListTile(
             leading: const Icon(Icons.verified_user),
             title: const Text('Profile'),
             onTap: () => {
