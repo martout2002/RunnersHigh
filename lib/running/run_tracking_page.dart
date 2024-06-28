@@ -210,7 +210,7 @@ class RunTrackingPageState extends State<RunTrackingPage> {
       //   zoom: 18.0, // Adjust the zoom level as needed
       // )));
       CameraUpdate update =
-          CameraUpdate.newLatLngBounds(bounds, 50); // 50 is the padding
+          CameraUpdate.newLatLngBounds(bounds, 100); // 50 is the padding
       _mapController!.animateCamera(update);
     }
     if (_user != null) {
