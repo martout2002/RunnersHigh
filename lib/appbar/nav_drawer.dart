@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:runners_high/home_page.dart';
+import 'package:runners_high/social/friend_page.dart';
 import '../running/run_history_page.dart';
 import '../UserProfilePage.dart';
 
@@ -52,7 +53,11 @@ class NavDrawer extends StatelessWidget {
             leading: const Icon(Icons.person),
             title: const Text('Friends'),
             onTap: () {
-              Navigator.pushReplacementNamed(context, '/friends');
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => FriendPage(),
+                ),
+              );
             },
           ),
           ListTile(
