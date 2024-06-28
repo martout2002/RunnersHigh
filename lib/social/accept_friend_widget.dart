@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 
-class AcceptFriendWidget extends StatelessWidget {
+class AcceptFriendWidget extends StatefulWidget {
+  const AcceptFriendWidget({Key? key}) : super(key: key);
+
+  @override
+  AcceptFriendWidgetState createState() => AcceptFriendWidgetState();
+}
+
+class AcceptFriendWidgetState extends State<AcceptFriendWidget> {
   // write function to grab friend request list here
 
   // write function to add friend in friends list -> set unique user id
