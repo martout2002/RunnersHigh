@@ -164,7 +164,8 @@ class RunTrackingPageState extends State<RunTrackingPage> {
     });
   }
 
-  Future<void> updateUserRuns() async {
+  Future<void> updateUserRuns(String dist) async {
+    double _distance = double.parse(dist);
     final ref =
         FirebaseDatabase.instance.ref().child('profiles').child(_user!.uid);
     if (ref != null) {
@@ -175,6 +176,8 @@ class RunTrackingPageState extends State<RunTrackingPage> {
           //update user profile num of runs
           userStreamSubscription.cancel();
           ref.update({'num_of_runs': userData['num_of_runs'] + 1});
+          ref.update(
+              {'total_distance': userData['total_distance'] + _distance});
         } else {
           print("No user data available");
         }
@@ -192,7 +195,7 @@ class RunTrackingPageState extends State<RunTrackingPage> {
     }
     if (_user != null) {
       String? runName = await _showRunNameDialog();
-      updateUserRuns();
+      updateUserRuns(_distance.toStringAsFixed(2));
       if (runName != null) {
         String? imageString;
         // Take a snapshot of the map
