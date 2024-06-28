@@ -25,7 +25,8 @@ class LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-    _firebaseStreamEvents = FirebaseAuth.instance.authStateChanges().listen((User? user) {
+    _firebaseStreamEvents =
+        FirebaseAuth.instance.authStateChanges().listen((User? user) {
       if (user != null) {
         Navigator.pushReplacementNamed(context, '/home');
       }
@@ -45,7 +46,8 @@ class LoginPageState extends State<LoginPage> {
       _isLoading = true;
     });
     try {
-      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+      UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
@@ -62,7 +64,8 @@ class LoginPageState extends State<LoginPage> {
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to sign in: $e')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Failed to sign in: $e')));
       }
     } finally {
       if (mounted) {
@@ -78,13 +81,16 @@ class LoginPageState extends State<LoginPage> {
       _isLoading = true;
     });
     try {
-      await FirebaseAuth.instance.sendPasswordResetEmail(email: _emailController.text.trim());
+      await FirebaseAuth.instance
+          .sendPasswordResetEmail(email: _emailController.text.trim());
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Password reset email sent')));
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Password reset email sent')));
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to send reset email: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to send reset email: $e')));
       }
     } finally {
       if (mounted) {
@@ -103,12 +109,14 @@ class LoginPageState extends State<LoginPage> {
       appBar: AppBar(
         title: const Text(
           "Runners' High",
-          style: TextStyle(color: Colors.black), // Ensures the text color does not change
+          style: TextStyle(
+              color: Colors.black), // Ensures the text color does not change
         ),
         backgroundColor: Colors.white, // Fixed color for the AppBar
         actions: [
           IconButton(
-            icon: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode, color: Colors.black),
+            icon: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                color: Colors.black),
             onPressed: widget.onToggleTheme,
           ),
         ],
@@ -121,7 +129,9 @@ class LoginPageState extends State<LoginPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Image.asset(
-                isDarkMode ? 'lib/images/logo2dark.png' : 'lib/images/logo2.png',
+                isDarkMode
+                    ? 'assets/images/logo2dark.png'
+                    : 'assets/images/logo2.png',
                 height: 200,
               ),
               const SizedBox(height: 20),
@@ -132,10 +142,13 @@ class LoginPageState extends State<LoginPage> {
                   border: OutlineInputBorder(),
                   filled: true,
                   fillColor: Color(0xFFD3D3D3), // Light grey color
-                  labelStyle: TextStyle(color: Colors.black), // Ensures label text is always black
+                  labelStyle: TextStyle(
+                      color:
+                          Colors.black), // Ensures label text is always black
                 ),
                 keyboardType: TextInputType.emailAddress,
-                style: const TextStyle(color: Colors.black), // Ensures text is always black
+                style: const TextStyle(
+                    color: Colors.black), // Ensures text is always black
               ),
               const SizedBox(height: 20),
               TextField(
@@ -145,9 +158,13 @@ class LoginPageState extends State<LoginPage> {
                   border: const OutlineInputBorder(),
                   filled: true,
                   fillColor: const Color(0xFFD3D3D3), // Light grey color
-                  labelStyle: const TextStyle(color: Colors.black), // Ensures label text is always black
+                  labelStyle: const TextStyle(
+                      color:
+                          Colors.black), // Ensures label text is always black
                   suffixIcon: IconButton(
-                    icon: Icon(_obscureText ? Icons.visibility : Icons.visibility_off, color: Colors.black), // Ensures icon is always black
+                    icon: Icon(
+                        _obscureText ? Icons.visibility : Icons.visibility_off,
+                        color: Colors.black), // Ensures icon is always black
                     onPressed: () {
                       setState(() {
                         _obscureText = !_obscureText;
@@ -156,7 +173,8 @@ class LoginPageState extends State<LoginPage> {
                   ),
                 ),
                 obscureText: _obscureText,
-                style: const TextStyle(color: Colors.black), // Ensures text is always black
+                style: const TextStyle(
+                    color: Colors.black), // Ensures text is always black
               ),
               const SizedBox(height: 20),
               Row(
@@ -175,7 +193,10 @@ class LoginPageState extends State<LoginPage> {
                       Text(
                         'Remember me',
                         style: TextStyle(
-                          color: isDarkMode ? Colors.white : Colors.black, // Black in light mode, white in dark mode
+                          color: isDarkMode
+                              ? Colors.white
+                              : Colors
+                                  .black, // Black in light mode, white in dark mode
                         ),
                       ),
                     ],
@@ -191,12 +212,14 @@ class LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 20),
               SizedBox(
-                width: double.infinity, // Match the width of the email and password fields
+                width: double
+                    .infinity, // Match the width of the email and password fields
                 height: 38,
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _signIn,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF6BB2FF), // Light blue color
+                    backgroundColor:
+                        const Color(0xFF6BB2FF), // Light blue color
                     padding: const EdgeInsetsDirectional.fromSTEB(24, 0, 24, 0),
                     elevation: 3,
                     shape: RoundedRectangleBorder(
@@ -205,7 +228,8 @@ class LoginPageState extends State<LoginPage> {
                   ),
                   child: _isLoading
                       ? const CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
                         )
                       : Text(
                           'Log in',
@@ -223,7 +247,10 @@ class LoginPageState extends State<LoginPage> {
                   Text(
                     "Don’t have an account?",
                     style: TextStyle(
-                      color: isDarkMode ? Colors.white : Colors.grey, // Grey in light mode, white in dark mode
+                      color: isDarkMode
+                          ? Colors.white
+                          : Colors
+                              .grey, // Grey in light mode, white in dark mode
                     ),
                   ),
                   TextButton(

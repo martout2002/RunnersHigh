@@ -13,20 +13,19 @@ class UserProfilePage extends StatefulWidget {
 }
 
 class _UserProfilePageState extends State<UserProfilePage> {
-  
   var name = "";
   var num_of_runs = 0;
   var age = 0;
-  var exp ="err";
-  var goal ="err";
+  var exp = "err";
+  var goal = "err";
 
   // DatabaseReference? ref;
-
 
   void _getUserData() {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      final ref = FirebaseDatabase.instance.ref().child('profiles').child(user.uid);
+      final ref =
+          FirebaseDatabase.instance.ref().child('profiles').child(user.uid);
       ref.onValue.listen((event) {
         if (event.snapshot.value != null) {
           final data = Map<String, dynamic>.from(event.snapshot.value as Map);
@@ -35,7 +34,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
             num_of_runs = data['num_of_runs'];
             age = data['age'];
             exp = data['experience'];
-            goal = data['goal'];  
+            goal = data['goal'];
           });
         } else {
           print("No user data available");
@@ -50,37 +49,63 @@ class _UserProfilePageState extends State<UserProfilePage> {
     _getUserData();
   }
 
-  
   //testing user git push on mac
   @override
-Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      title: const Text("Runner's Profile"),
-    ),
-    body: Padding(
-      padding: const EdgeInsets.fromLTRB(40, 10, 0 ,0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Runner's Profile"),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+        child: Stack(children: [
+          //Image(image: AssetImage('assets/images/banner1.jpg')),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const CircleAvatar(
-                radius: 50,
+              Row(
+                children: [
+                  Padding(
+                      padding: EdgeInsets.fromLTRB(40, 0, 0, 0),
+                      child: CircleAvatar(
+                        foregroundImage: AssetImage('assets/images/pfp.jpg'),
+                        radius: 50,
+                      )),
+                  const SizedBox(width: 40),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name,
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        exp,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-              const SizedBox(width: 40),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              const SizedBox(width: 40, height: 15),
+              Row(
                 children: [
                   Text(
-                    name,
+                    '          $age years old',
                     style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Colors.grey,
                     ),
                   ),
+                  const SizedBox(width: 40),
                   Text(
-                    exp,
+                    'Goal: $goal',
                     style: const TextStyle(
                       fontSize: 16,
                       color: Colors.grey,
@@ -88,51 +113,32 @@ Widget build(BuildContext context) {
                   ),
                 ],
               ),
-            ],
-          ),
-          const SizedBox(width: 40, height: 15),
-          Row(
-            children: [
-              Text(
-                '          $age years old',
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
+              const SizedBox(height: 10),
+              Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    // TODO: Implement edit profile functionality
+                  },
+                  child: const Text(
+                    'Edit Profile',
+                    style: TextStyle(fontSize: 12),
+                  ),
                 ),
               ),
-              const SizedBox(width: 40),
-              Text(
-                'Goal: $goal',
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
+              const SizedBox(height: 10),
+              Center(
+                child: Text(
+                  '$num_of_runs runs completed',
+                  style: const TextStyle(
+                    fontSize: 24,
+                    color: Colors.black,
+                  ),
                 ),
               ),
             ],
           ),
-          
-          const SizedBox(height: 10),
-          Center(
-            child: ElevatedButton(
-              onPressed: () {
-                // TODO: Implement edit profile functionality
-              },
-              child: const Text('Edit Profile', style: TextStyle(fontSize: 12),),
-            ),
-          ),
-          const SizedBox(height: 10),
-          Center(
-            child: Text(
-              '$num_of_runs runs completed',
-              style: const TextStyle(
-                fontSize: 24,
-                color: Colors.black,
-              ),
-            ),
-          ),
-        ],
+        ]),
       ),
-    ),
-  );
-}
+    );
+  }
 }

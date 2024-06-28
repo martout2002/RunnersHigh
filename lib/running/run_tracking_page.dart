@@ -22,6 +22,7 @@ class RunTrackingPage extends StatefulWidget {
 }
 
 class RunTrackingPageState extends State<RunTrackingPage> {
+  late StreamSubscription userStreamSubscription;
   var num_of_runs = 0;
   bool _isRecording = false;
   bool _isPaused = false;
@@ -163,76 +164,86 @@ class RunTrackingPageState extends State<RunTrackingPage> {
     });
   }
 
-  Future<void> _saveRun() async {
-  if (_user != null) {
-    String? runName = await _showRunNameDialog();
-    final ref = FirebaseDatabase.instance.ref().child('profiles').child(_user!.uid);
+  Future<void> updateUserRuns() async {
+    final ref =
+        FirebaseDatabase.instance.ref().child('profiles').child(_user!.uid);
     if (ref != null) {
-      ref.onValue.listen((event) {
+      userStreamSubscription = ref.onValue.listen((event) {
         if (event.snapshot.value != null) {
-          final data = Map<String, dynamic>.from(event.snapshot.value as Map);
+          final userData =
+              Map<String, dynamic>.from(event.snapshot.value as Map);
           //update user profile num of runs
-          ref.update({'num_of_runs': data['num_of_runs'] + 1});
+          userStreamSubscription.cancel();
+          ref.update({'num_of_runs': userData['num_of_runs'] + 1});
         } else {
           print("No user data available");
         }
       });
     }
-    if (runName != null) {
-      
-      String? imageString;
-      // Take a snapshot of the map
-      final Uint8List? mapSnapshot = await _mapController?.takeSnapshot();
-      File? imageFile;
-      if (mapSnapshot != null) {
-        // Get the path to the app's temporary directory
-        final Directory tempDir = await getTemporaryDirectory();
-        final String tempPath = tempDir.path;
-        // Compress the image
-        final Uint8List compressedImage = await FlutterImageCompress.compressWithList(
-          mapSnapshot,
-          minWidth: 600,
-          minHeight: 800,
-          quality: 88,
-        );
+  }
 
-        // Write the image to a file
-        imageFile = File('$tempPath/map_snapshot.png');
-        await imageFile.writeAsBytes(compressedImage, flush: true);
-
-        
-        if (imageFile != null) {
-          // Read the image file as a list of bytes
-          final bytes = await imageFile.readAsBytes();
-
-          // Encode the bytes in Base64 and create a data URL
-          imageString = base64Encode(bytes);
-        }
-
-
-        
-        print("e");
-        // TODO: Upload the image file to a server or cloud storage
-      }
-      final run = {
-        'name': runName,
-        'distance': _distance.toStringAsFixed(2),
-        'duration': (_duration.inSeconds / 60.0 * 100).round() / 100.0,
-        'pace': (_pace * 100).round() / 100.0,
-        'route': _route
-            .map(
-                (latLng) => {'lat': latLng.latitude, 'lng': latLng.longitude})
-            .toList(),
-        'timestamp': DateTime.now().toIso8601String(),
-        'image': imageString,
-      };
-      _runRef?.push().set(run);
+  Future<void> _saveRun() async {
+    if (_lastPosition != null && _mapController != null) {
+      _mapController!
+          .animateCamera(CameraUpdate.newCameraPosition(CameraPosition(
+        target: LatLng(_lastPosition!.latitude, _lastPosition!.longitude),
+        zoom: 18.0, // Adjust the zoom level as needed
+      )));
     }
-    if (mounted) {
-      Navigator.pushReplacementNamed(context, '/home');
+    if (_user != null) {
+      String? runName = await _showRunNameDialog();
+      updateUserRuns();
+      if (runName != null) {
+        String? imageString;
+        // Take a snapshot of the map
+        final Uint8List? mapSnapshot = await _mapController?.takeSnapshot();
+        File? imageFile;
+        if (mapSnapshot != null) {
+          // Get the path to the app's temporary directory
+          final Directory tempDir = await getTemporaryDirectory();
+          final String tempPath = tempDir.path;
+          // Compress the image
+          final Uint8List compressedImage =
+              await FlutterImageCompress.compressWithList(
+            mapSnapshot,
+            minWidth: 600,
+            minHeight: 800,
+            quality: 88,
+          );
+
+          // Write the image to a file
+          imageFile = File('$tempPath/map_snapshot.png');
+          await imageFile.writeAsBytes(compressedImage, flush: true);
+
+          if (imageFile != null) {
+            // Read the image file as a list of bytes
+            final bytes = await imageFile.readAsBytes();
+
+            // Encode the bytes in Base64 and create a data URL
+            imageString = base64Encode(bytes);
+          }
+
+          // TODO: Upload the image file to a server or cloud storage
+        }
+        final run = {
+          'name': runName,
+          'distance': _distance.toStringAsFixed(2),
+          'duration': (_duration.inSeconds / 60.0 * 100).round() / 100.0,
+          'pace': (_pace * 100).round() / 100.0,
+          'route': _route
+              .map(
+                  (latLng) => {'lat': latLng.latitude, 'lng': latLng.longitude})
+              .toList(),
+          'timestamp': DateTime.now().toIso8601String(),
+          'image': imageString,
+        };
+        _runRef?.push().set(run);
+      }
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/home');
+      }
     }
   }
-}
 
   Future<String?> _showRunNameDialog() async {
     String? runName;
