@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:nativewrappers/_internal/vm/lib/internal_patch.dart';
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -23,7 +24,6 @@ class _RunHistoryPageState extends State<RunHistoryPage> {
   var duration;
   var distance;
 
-
   @override
   void initState() {
     super.initState();
@@ -43,7 +43,6 @@ class _RunHistoryPageState extends State<RunHistoryPage> {
                 .map((key) =>
                     {'key': key, ...Map<String, dynamic>.from(data[key])})
                 .toList();
-              
           });
         } else {
           // Log when there's no data
@@ -63,9 +62,7 @@ class _RunHistoryPageState extends State<RunHistoryPage> {
     setState(() {
       //distance = double.tryParse(run['distance']);
       duration = run['duration'];
-      
     });
-    
   }
 
   @override
@@ -85,11 +82,13 @@ class _RunHistoryPageState extends State<RunHistoryPage> {
                   margin: const EdgeInsets.all(8.0),
                   child: ListTile(
                     leading: run['image'] != null
-                      ? Image.memory(base64Decode(run['image']))
-                      : null,
+                        ? Image.memory(base64Decode(run['image']))
+                        : null,
                     title: Text('${run['name'] ?? 'Unnamed Run'}'),
                     subtitle: Text(
-                        'Distance: ${run['distance']} km\nTime: ${run['duration'].floor()}m : ${((run['duration'] % 1) * 60).round().toString().padLeft(2, '0')}s \nPace: ${run['pace'].floor()}:${((run['pace'] % 1) * 60).round().toString().padLeft(2, '0')}  min/km', style: const TextStyle(fontSize: 14),),
+                      'Distance: ${run['distance']} km\nTime: ${run['duration'].floor()}m : ${((run['duration'] % 1) * 60).round().toString().padLeft(2, '0')}s \nPace: ${run['pace'].floor()}:${((run['pace'] % 1) * 60).round().toString().padLeft(2, '0')}  min/km',
+                      style: const TextStyle(fontSize: 14),
+                    ),
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -131,8 +130,20 @@ class _RunDetailsPageState extends State<RunDetailsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(
-          title: widget.run['name'] ?? 'Run Details', onToggleTheme: widget.onToggleTheme),
+      appBar: AppBar(
+          backgroundColor: Colors.blue,
+          title: Align(
+            alignment: Alignment.topRight,
+            child: Text(
+              widget.run['name'] ?? 'Run Details',
+              style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white),
+            ),
+          )),
+      // appBar: CustomAppBar(
+      //     title: widget.run['name'] ?? 'Run Details', onToggleTheme: widget.onToggleTheme),
       body: Column(
         children: [
           Expanded(

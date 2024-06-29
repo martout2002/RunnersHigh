@@ -146,7 +146,7 @@ class AcceptFriendWidgetState extends State<AcceptFriendWidget> {
       ),
       body: Center(
           child: friend_requests.isEmpty
-              ? const Text('Time to get friends')
+              ? const Text('No one wants to be ur friend yet !!!')
               : ListView.builder(
                   itemCount: friend_requests.length,
                   itemBuilder: (context, index) {
