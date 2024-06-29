@@ -19,6 +19,26 @@ class AcceptFriendWidgetState extends State<AcceptFriendWidget> {
     init_data();
   }
 
+  Future<void> _rejectReqeust(dynamic key) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      try {
+        final ref =
+            FirebaseDatabase.instance.ref().child('profiles').child(user.uid);
+        final snapshot = await ref.get();
+        if (snapshot.exists) {
+          final data = Map<String, dynamic>.from(snapshot.value as Map);
+          var friendReqList = data['friend_req'];
+          friendReqList.remove(key);
+          await ref.update({'friend_req': friendReqList});
+        }
+      } catch (e) {
+        print('Error rejecting friend request: $e');
+        // Handle the error appropriately
+      }
+    }
+  }
+
   Future<void> _acceptRequest(String id, dynamic key) async {
     Map<dynamic, dynamic> friendList = {};
     final user = FirebaseAuth.instance.currentUser;
@@ -190,6 +210,7 @@ class AcceptFriendWidgetState extends State<AcceptFriendWidget> {
                                   icon: Icon(Icons.close),
                                   onPressed: () {
                                     // Reject friend request logic
+                                    _rejectReqeust(friendReqData['key']);
                                   },
                                 ),
                               ],
