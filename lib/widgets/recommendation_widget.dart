@@ -13,7 +13,8 @@ class RecommendationWidget extends StatelessWidget {
 
   bool _checkIfMetRequirement(String requirement) {
     for (var run in pastRuns) {
-      if (requirement.contains(run['distance'].toString()) && requirement.contains(run['pace'].toString())) {
+      if (requirement.contains(run['distance'].toString()) &&
+          requirement.contains(run['pace'].toString())) {
         return true;
       }
     }
@@ -42,17 +43,20 @@ class RecommendationWidget extends StatelessWidget {
       itemCount: sortedKeys.length,
       itemBuilder: (context, index) {
         String phaseKey = sortedKeys[index];
-        Map<String, dynamic> phaseDetails = Map<String, dynamic>.from(recommendation[phaseKey]);
+        Map<String, dynamic> phaseDetails =
+            Map<String, dynamic>.from(recommendation[phaseKey]);
         log('Phase details for $phaseKey: $phaseDetails'); // Debugging log
 
         // Sort runs in ascending order
         var sortedRuns = phaseDetails.keys.toList()
-          ..sort((a, b) => _extractWeekNumber(a).compareTo(_extractWeekNumber(b)));
+          ..sort(
+              (a, b) => _extractWeekNumber(a).compareTo(_extractWeekNumber(b)));
 
         return Card(
           margin: const EdgeInsets.all(8.0),
           child: ExpansionTile(
-            title: Text(phaseKey, style: const TextStyle(fontWeight: FontWeight.bold)),
+            title: Text(phaseKey,
+                style: const TextStyle(fontWeight: FontWeight.bold)),
             children: sortedRuns.map((runKey) {
               final isMet = _checkIfMetRequirement(phaseDetails[runKey]);
               return ListTile(
@@ -61,8 +65,10 @@ class RecommendationWidget extends StatelessWidget {
                   color: isMet ? Colors.green : Colors.grey,
                   size: 40.0,
                 ),
-                title: Text(runKey, style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text(phaseDetails[runKey], style: const TextStyle(fontSize: 16.0)),
+                title: Text(runKey,
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: Text(phaseDetails[runKey],
+                    style: const TextStyle(fontSize: 16.0)),
               );
             }).toList(),
           ),

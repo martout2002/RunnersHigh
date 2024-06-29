@@ -19,7 +19,8 @@ class AcceptFriendWidgetState extends State<AcceptFriendWidget> {
     init_data();
   }
 
-  Future<void> _acceptRequest(String id) async {
+  Future<void> _acceptRequest(String id, dynamic key) async {
+    Map<dynamic, dynamic> friendList = {};
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       try {
@@ -28,27 +29,17 @@ class AcceptFriendWidgetState extends State<AcceptFriendWidget> {
         final snapshot = await ref.get();
         if (snapshot.exists) {
           final data = Map<String, dynamic>.from(snapshot.value as Map);
-          // Convert friend_req and friends from Map to List if necessary
-          var friendReqList = data['friend_req'] is Map
-              ? (data['friend_req'] as Map).values.toList()
-              : (data['friend_req'] ?? []);
-          var friendsList = data['friends'] is Map
-              ? (data['friends'] as Map).values.toList()
-              : (data['friends'] ?? []);
-          // Update friends to contain this id
-          print('Friend requests: $friendReqList');
-          friendReqList.remove(id);
-          friendsList.add(id);
-          List<Map<String, dynamic>> outReqList =
-              friendReqList.map((item) => {item: item}).toList();
+          var friendReqList = data['friend_req'];
+          friendReqList.remove(key);
+          if (data['friends'] != null) {
+            friendList = data['friends'];
+          }
+          friendList[id] = id;
 
-          List<Map<String, dynamic>> outFriendList =
-              friendsList.map((item) => {item: item}).toList();
-          print('Friend requests after removal: $friendReqList');
           // Use update for partial updates
           await ref.update({
-            'friend_req': outReqList,
-            'friends': outFriendList,
+            'friend_req': friendReqList,
+            'friends': friendList,
           });
         }
       } catch (e) {
@@ -162,7 +153,8 @@ class AcceptFriendWidgetState extends State<AcceptFriendWidget> {
                                 IconButton(
                                   icon: Icon(Icons.check),
                                   onPressed: () async {
-                                    _acceptRequest(friendReqData['code']);
+                                    _acceptRequest(friendReqData['code'],
+                                        friendReqData['key']);
                                     // var name = friendData['name'];
                                     // showDialog(
                                     //     context: context,
