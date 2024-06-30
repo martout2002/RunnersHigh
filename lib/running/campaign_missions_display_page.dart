@@ -5,8 +5,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class CampaignMissionsDisplayPage extends StatefulWidget {
   final String campaignId;
+  final bool currentCampaign;
 
-  CampaignMissionsDisplayPage({required this.campaignId});
+  CampaignMissionsDisplayPage(
+      {required this.campaignId, Key? key, required this.currentCampaign});
 
   @override
   _CampaignMissionsDisplayPageState createState() =>
@@ -17,12 +19,29 @@ class _CampaignMissionsDisplayPageState
     extends State<CampaignMissionsDisplayPage> {
   List<Map<dynamic, dynamic>> _campaignData = [];
   List<Map<dynamic, dynamic>> _campaignMissions = [];
+  List<dynamic> _userCompletedMissions = [];
   var campaignName = 'Campaign';
+  late bool currentCampaignAccurate;
 
   @override
   void initState() {
     super.initState();
     _initCampaignData();
+    _setBoolean();
+    _checkCompletedMissions();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  void _setBoolean() {
+    if (mounted) {
+      setState(() {
+        currentCampaignAccurate = widget.currentCampaign;
+      });
+    }
   }
 
   void _initCampaignData() {
@@ -89,28 +108,104 @@ class _CampaignMissionsDisplayPageState
     }
   }
 
+  void _setCurrentCampaign() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final ref =
+          FirebaseDatabase.instance.ref().child('profiles').child(user.uid);
+      ref.child('currentCampaign').set(widget.campaignId);
+    }
+    if (mounted) {
+      setState(() {
+        currentCampaignAccurate = true;
+      });
+    }
+  }
+
+  void _unsetCurrentCampaign() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final ref =
+          FirebaseDatabase.instance.ref().child('profiles').child(user.uid);
+      ref.child('currentCampaign').set('null');
+    }
+    if (mounted) {
+      setState(() {
+        currentCampaignAccurate = false;
+      });
+    }
+  }
+
+  void _checkCompletedMissions() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final ref =
+          FirebaseDatabase.instance.ref().child('profiles').child(user.uid);
+
+      ref.onValue.listen((event) {
+        final eventValue = event.snapshot.value;
+        if (eventValue != null) {
+          final data = Map<String, dynamic>.from(eventValue as Map);
+          print(data['completedMissions']);
+          print(data['completedMissions']['C1']);
+          if (data['completedMissions'] != null) {
+            if (data['completedMissions'][widget.campaignId] != null) {
+              setState(() {
+                _userCompletedMissions =
+                    data['completedMissions'][widget.campaignId].keys.toList();
+              });
+              print(_userCompletedMissions);
+            }
+          }
+        }
+      }, onError: (error) {
+        // Log any errors
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: Text('$campaignName Missions',
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 24.0,
-                  fontWeight: FontWeight.bold)),
-          backgroundColor: Color.fromARGB(255, 60, 60, 60)),
+        title: Text('$campaignName Missions',
+            style: const TextStyle(
+                color: Colors.white,
+                fontSize: 24.0,
+                fontWeight: FontWeight.bold)),
+        backgroundColor: const Color.fromARGB(255, 60, 60, 60),
+        actions: [
+          IconButton(
+            icon: currentCampaignAccurate
+                ? Image.asset('assets/images/MinusMap.png')
+                : Image.asset('assets/images/PlusMap.png'),
+            onPressed: () {
+              currentCampaignAccurate
+                  ? _unsetCurrentCampaign()
+                  : _setCurrentCampaign();
+            },
+          ),
+        ],
+      ), // Example indices of completed missions
+
       body: Container(
         color: const Color.fromARGB(255, 20, 20, 20),
         child: GridView.count(
           crossAxisCount: 2,
           children: _campaignMissions.asMap().entries.map((entry) {
             int index = entry.key;
+            int indexMinus = index + 1;
             var mission = entry.value;
+            bool isCompleted = _userCompletedMissions
+                .contains("M$indexMinus"); // Check if mission is completed
             return Container(
-              margin: EdgeInsets.all(8),
-              padding: EdgeInsets.all(16),
+              margin: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Color.fromARGB(255, 40, 40, 40),
+                color: isCompleted
+                    ? Color.fromARGB(255, 47, 77, 48)
+                    : const Color.fromARGB(
+                        255, 40, 40, 40), // Green if completed
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Column(
@@ -123,7 +218,7 @@ class _CampaignMissionsDisplayPageState
                         fontSize: 16,
                         color: Colors.white),
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Text(
                     '${mission['km']} km',
                     style: const TextStyle(

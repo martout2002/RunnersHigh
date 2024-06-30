@@ -12,11 +12,34 @@ class CampaignPage extends StatefulWidget {
 
 class CampaignPageState extends State<CampaignPage> {
   List<Map<String, dynamic>> _campaigns = [];
+  var _userCurrentCampaign = "null";
 
   @override
   void initState() {
     super.initState();
     _initCampaignData();
+    _checkCurrentCampaign();
+  }
+
+  void _checkCurrentCampaign() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final ref =
+          FirebaseDatabase.instance.ref().child('profiles').child(user.uid);
+      ref.onValue.listen((event) {
+        final eventValue = event.snapshot.value;
+        if (eventValue != null) {
+          final data = Map<String, dynamic>.from(eventValue as Map);
+          if (data['currentCampaign'] != null) {
+            setState(() {
+              _userCurrentCampaign = data['currentCampaign'];
+            });
+          }
+        }
+      }, onError: (error) {
+        // Log any errors
+      });
+    }
   }
 
   void _initCampaignData() {
@@ -48,18 +71,17 @@ class CampaignPageState extends State<CampaignPage> {
                     color: Colors.white,
                     fontSize: 24.0,
                     fontWeight: FontWeight.bold)),
-            backgroundColor: Color.fromARGB(255, 60, 60, 60)),
+            backgroundColor: const Color.fromARGB(255, 60, 60, 60)),
         body: Container(
           color: const Color.fromARGB(255, 20, 20, 20),
           child: ListView.builder(
             itemCount: _campaigns.length,
-            padding: EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16.0),
             itemBuilder: (context, index) {
               final campaign = _campaigns[index];
               final campaignId = campaign['id'];
               final km = campaign['km'];
               final num_of_runs = campaign['num_of_runs'];
-              print("assets/images/$campaignId.png");
 
               return CampaignBanner(
                 image: AssetImage("assets/images/$campaignId.png"),
@@ -71,9 +93,12 @@ class CampaignPageState extends State<CampaignPage> {
                     MaterialPageRoute(
                         builder: (context) => CampaignMissionsDisplayPage(
                               campaignId: campaignId,
+                              currentCampaign:
+                                  _userCurrentCampaign == campaignId,
                             )),
                   );
                 },
+                currentCampaign: _userCurrentCampaign == campaignId,
               );
             },
           ),
@@ -124,23 +149,30 @@ class CampaignPageState extends State<CampaignPage> {
   // }
 }
 
-class CampaignBanner extends StatelessWidget {
+class CampaignBanner extends StatefulWidget {
   final ImageProvider image;
   final String text;
   final String subtitle;
   final VoidCallback onPressed;
+  final bool currentCampaign;
 
-  const CampaignBanner({
-    required this.image,
-    required this.text,
-    required this.subtitle,
-    required this.onPressed,
-  });
+  const CampaignBanner(
+      {super.key,
+      required this.image,
+      required this.text,
+      required this.subtitle,
+      required this.onPressed,
+      required this.currentCampaign});
 
+  @override
+  CampaignBannerState createState() => CampaignBannerState();
+}
+
+class CampaignBannerState extends State<CampaignBanner> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onPressed,
+      onTap: widget.onPressed,
       child: Card(
         color: const Color.fromARGB(
             255, 40, 40, 40), // Set the background color of the Card
@@ -149,12 +181,36 @@ class CampaignBanner extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Image(image: image),
+              Stack(
+                alignment: Alignment
+                    .topRight, // Position the tick on the top right of the image
+                children: [
+                  Image(image: widget.image),
+                  if (widget
+                      .currentCampaign) // Only show if currentCampaign is true
+                    Container(
+                      padding: const EdgeInsets.all(5.0),
+                      decoration: const BoxDecoration(
+                        color: Colors.green, // Background color of the tick
+                        borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(12.0),
+                        ),
+                      ),
+                      child: const Text(
+                        'Current Campaign',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12.0,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
               const SizedBox(height: 8.0),
               Padding(
                   padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
                   child: Text(
-                    text,
+                    widget.text,
                     style: const TextStyle(
                       color: Color.fromARGB(255, 119, 189, 253),
                       fontSize: 18.0,
@@ -164,13 +220,13 @@ class CampaignBanner extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
                 child: Text(
-                  subtitle,
+                  widget.subtitle,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 12.0,
                   ),
                 ),
-              )
+              ),
             ],
           ),
         ),
