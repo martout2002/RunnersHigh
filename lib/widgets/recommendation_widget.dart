@@ -6,11 +6,13 @@ import 'dart:developer';
 class RecommendationWidget extends StatefulWidget {
   final Map<String, dynamic> recommendation;
   final List<Map<String, dynamic>> pastRuns;
+  final Function(Map<String, dynamic>) onRecommendationUpdated; // Callback for when recommendation is updated
 
   const RecommendationWidget({
     super.key,
     required this.recommendation,
     required this.pastRuns,
+    required this.onRecommendationUpdated, // Accept callback in constructor
   });
 
   @override
@@ -18,8 +20,6 @@ class RecommendationWidget extends StatefulWidget {
 }
 
 class _RecommendationWidgetState extends State<RecommendationWidget> {
-  Map<String, Set<String>> completedRuns = {};
-
   bool _checkIfMetRequirement(String requirement) {
     for (var run in widget.pastRuns) {
       if (requirement.contains(run['distance'].toString()) && requirement.contains(run['pace'].toString())) {
@@ -29,50 +29,20 @@ class _RecommendationWidgetState extends State<RecommendationWidget> {
     return false;
   }
 
-  Future<void> _loadCompletedRuns() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      final ref = FirebaseDatabase.instance.ref().child('completed_runs').child(user.uid);
-      final snapshot = await ref.get();
-      if (snapshot.exists) {
-        final data = snapshot.value as Map;
-        setState(() {
-          completedRuns = data.map((key, value) => MapEntry(key as String, Set<String>.from(value.keys)));
-        });
-        log('Completed runs loaded: $completedRuns');
-      }
-    }
-  }
-
   Future<void> _toggleRunCompletion(String week, String runKey) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      final ref = FirebaseDatabase.instance.ref().child('completed_runs').child(user.uid).child(week).child(runKey);
-      if (completedRuns[week]?.contains(runKey) ?? false) {
-        // Untick the run
-        try {
-          await ref.remove();
-          setState(() {
-            completedRuns[week]?.remove(runKey);
-            if (completedRuns[week]?.isEmpty ?? false) {
-              completedRuns.remove(week);
-            }
-          });
-          log('Run unmarked as completed: $week - $runKey');
-        } catch (e) {
-          log('Error unmarking run as completed: $e');
-        }
-      } else {
-        // Tick the run
-        try {
-          await ref.set({'completed': true});
-          setState(() {
-            completedRuns.putIfAbsent(week, () => {}).add(runKey);
-          });
-          log('Run marked as completed: $week - $runKey');
-        } catch (e) {
-          log('Error marking run as completed: $e');
-        }
+      final ref = FirebaseDatabase.instance.ref().child('recommendations').child(user.uid).child('recommendation').child(week).child(runKey).child('completed');
+      bool isCompleted = widget.recommendation[week][runKey]['completed'] ?? false;
+      try {
+        await ref.set(!isCompleted);
+        setState(() {
+          widget.recommendation[week][runKey]['completed'] = !isCompleted;
+        });
+        widget.onRecommendationUpdated(widget.recommendation); // Notify parent of update
+        log('Run completion toggled: $week - $runKey to ${!isCompleted}');
+      } catch (e) {
+        log('Error toggling run completion: $e');
       }
     }
   }
@@ -84,12 +54,6 @@ class _RecommendationWidgetState extends State<RecommendationWidget> {
       log('Error parsing week number from key: $key');
       return 0; // Return a default value if parsing fails
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _loadCompletedRuns();
   }
 
   @override
@@ -105,7 +69,7 @@ class _RecommendationWidgetState extends State<RecommendationWidget> {
       itemCount: sortedKeys.length,
       itemBuilder: (context, index) {
         String phaseKey = sortedKeys[index];
-        Map<String, dynamic> phaseDetails = Map<String, dynamic>.from(widget.recommendation[phaseKey]);
+        var phaseDetails = widget.recommendation[phaseKey];
         log('Phase details for $phaseKey: $phaseDetails'); // Debugging log
 
         // Sort runs in ascending order
@@ -116,9 +80,14 @@ class _RecommendationWidgetState extends State<RecommendationWidget> {
           margin: const EdgeInsets.all(8.0),
           child: ExpansionTile(
             title: Text(phaseKey, style: const TextStyle(fontWeight: FontWeight.bold)),
-            children: sortedRuns.map((runKey) {
-              final isMet = _checkIfMetRequirement(phaseDetails[runKey]);
-              final isCompleted = completedRuns[phaseKey]?.contains(runKey) ?? false;
+            children: sortedRuns.map<Widget>((runKey) {
+              var runDetails = phaseDetails[runKey];
+              if (runDetails is! Map) {
+                log('Invalid run details format for $runKey: $runDetails');
+                return Container(); // Skip invalid run details
+              }
+              final isMet = _checkIfMetRequirement(runDetails['details'] ?? '');
+              final isCompleted = runDetails['completed'] ?? false;
               return ListTile(
                 leading: IconButton(
                   icon: Icon(
@@ -131,9 +100,9 @@ class _RecommendationWidgetState extends State<RecommendationWidget> {
                   },
                 ),
                 title: Text(runKey, style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text(phaseDetails[runKey], style: const TextStyle(fontSize: 16.0)),
+                subtitle: Text(runDetails['details'] ?? '', style: const TextStyle(fontSize: 16.0)),
               );
-            }).toList(),
+            }).toList(), // Explicitly cast to List<Widget>
           ),
         );
       },

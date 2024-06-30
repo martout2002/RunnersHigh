@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:runners_high/appbar/nav_drawer.dart';
 import 'services/gemini_api.dart';
-import 'package:runners_high/appbar/custom_app_bar.dart';
 import 'widgets/progress_indicator.dart';
 import 'widgets/recommendation_widget.dart';
-import 'widgets/floating_action_button.dart';
+import 'widgets/floating_action_button.dart'; // Adjust import path if needed
+import 'appbar/nav_drawer.dart';
+import 'appbar/custom_app_bar.dart';
 import 'dart:developer';
 
 class HomePage extends StatefulWidget {
@@ -157,6 +157,12 @@ class HomePageState extends State<HomePage> {
     }
   }
 
+  void _updateRecommendation(Map<String, dynamic> updatedRecommendation) {
+    setState(() {
+      _runRecommendation = updatedRecommendation;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -165,8 +171,7 @@ class HomePageState extends State<HomePage> {
       drawer: const NavDrawer(),
       body: Column(
         children: [
-          ProgressIndicatorWidget(
-              runRecommendation: _runRecommendation, pastRuns: _pastRuns),
+          ProgressIndicatorWidget(runRecommendation: _runRecommendation),
           if (_runRecommendation != null)
             Flexible(
               fit: FlexFit.tight,
@@ -176,6 +181,7 @@ class HomePageState extends State<HomePage> {
                 child: RecommendationWidget(
                   recommendation: _runRecommendation!,
                   pastRuns: _pastRuns,
+                  onRecommendationUpdated: _updateRecommendation,
                 ),
               ),
             ),
@@ -205,3 +211,4 @@ class HomePageState extends State<HomePage> {
     );
   }
 }
+
