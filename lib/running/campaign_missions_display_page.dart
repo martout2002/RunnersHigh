@@ -27,6 +27,7 @@ class _CampaignMissionsDisplayPageState
   List<Map<dynamic, dynamic>> _campaignMissions = [];
   List<dynamic> _userCompletedMissions = [];
   var campaignName = 'Campaign';
+  var currentMission = 'null';
   late bool currentCampaignAccurate;
 
   @override
@@ -199,6 +200,9 @@ class _CampaignMissionsDisplayPageState
             FirebaseDatabase.instance.ref().child('profiles').child(user.uid);
         ref.child('currentMission').set(id);
       }
+      setState(() {
+        currentMission = id;
+      });
     }
   }
 
@@ -241,9 +245,14 @@ class _CampaignMissionsDisplayPageState
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: isCompleted
-                    ? Color.fromARGB(255, 47, 77, 48)
-                    : const Color.fromARGB(
-                        255, 40, 40, 40), // Green if completed
+                    ? const Color.fromARGB(255, 47, 77, 48)
+                    : const Color.fromARGB(255, 40, 40, 40),
+                border: Border.all(
+                  color: currentMission == "M$indexMinus" &&
+                          currentCampaignAccurate == true
+                      ? const Color.fromARGB(255, 119, 189, 253)
+                      : Colors.transparent,
+                ),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Column(
@@ -253,7 +262,7 @@ class _CampaignMissionsDisplayPageState
                     '${index + 1}. ${mission['name']}', // Prepend the mission name with its index
                     style: const TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontSize: 15,
                         color: Colors.white),
                   ),
                   const SizedBox(height: 8),
