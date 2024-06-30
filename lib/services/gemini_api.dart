@@ -128,12 +128,15 @@ class GeminiService {
       String weekTitle = lines[0].trim();
 
       if (_isValidWeekTitle(weekTitle)) {
-        Map<String, String> weekRuns = {};
+        Map<String, dynamic> weekRuns = {};
         for (int j = 1; j < lines.length; j++) {
           String runDetail = lines[j].trim();
           if (_isValidRun(runDetail)) {
             String runKey = 'Run ${weekRuns.length + 1}';
-            weekRuns[runKey] = _cleanRunDetail(runDetail); // Clean run detail
+            weekRuns[runKey] = {
+              'details': _cleanRunDetail(runDetail), // Clean run detail
+              'completed': false // Default completion status
+            };
           } else {
             log('Invalid run detail: $runDetail');  // Debugging log
           }
