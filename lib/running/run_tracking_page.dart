@@ -40,6 +40,12 @@ class RunTrackingPageState extends State<RunTrackingPage> {
   DatabaseReference? _runRef;
   User? _user;
   StreamSubscription<Position>? _positionStreamSubscription;
+  bool _completedMission = false;
+  var kmRequired = 0.0;
+  var campaignId = "";
+  var mission = "";
+
+  late StreamSubscription _missionSubscription;
 
   @override
   void initState() {
@@ -47,12 +53,14 @@ class RunTrackingPageState extends State<RunTrackingPage> {
     _checkAuthentication();
     _requestLocationPermission();
     _getCurrentLocationAndSetMap();
+    _accessCurrentMissionData();
   }
 
   @override
   void dispose() {
     _timer?.cancel();
     _positionStreamSubscription?.cancel();
+    _missionSubscription.cancel();
     super.dispose();
   }
 
@@ -69,6 +77,125 @@ class RunTrackingPageState extends State<RunTrackingPage> {
     if (_user != null) {
       _runRef = FirebaseDatabase.instance.ref().child('runs').child(_user!.uid);
     }
+  }
+
+  void _accessCurrentMissionData() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final ref =
+          FirebaseDatabase.instance.ref().child('profiles').child(user.uid);
+      _missionSubscription = ref.onValue.listen((event) {
+        final eventValue = event.snapshot.value;
+        if (eventValue != null) {
+          final data = Map<String, dynamic>.from(eventValue as Map);
+          if (data['currentCampaign'] != null) {
+            campaignId = data['currentCampaign'];
+            if (data['currentMission'] != null) {
+              mission = data['currentMission'];
+            }
+          }
+        }
+        _getKmRequired(campaignId, mission);
+      }, onError: (error) {
+        // Log any errors
+      });
+    }
+  }
+
+  void _reSelectCurrentMission(String campaignId, String missionId) {
+    var length = 0;
+    final campaignRef =
+        FirebaseDatabase.instance.ref().child('Campaign').child(campaignId);
+    campaignRef.onValue.listen((event) {
+      final eventValue = event.snapshot.value;
+      if (eventValue != null) {
+        final data = Map<String, dynamic>.from(eventValue as Map);
+        length = data['km'];
+      }
+    }, onError: (error) {
+      // Log any errors
+    });
+    if (mounted) {
+      int mission_as_int = int.parse(missionId.substring(1));
+
+      if (mission_as_int < length) {
+        _setCurrentMission("m${length + 1}");
+      } else {
+        _setCurrentMission('null');
+      }
+    }
+  }
+
+  void _setCurrentMission(String id) {
+    if (mounted) {
+      final user = FirebaseAuth.instance.currentUser;
+
+      if (user != null) {
+        final ref =
+            FirebaseDatabase.instance.ref().child('profiles').child(user.uid);
+        if (id == 'null') {
+          ref.child('currentMission').set('null');
+        } else {
+          ref.child('currentMission').set(id);
+        }
+      }
+    }
+  }
+
+  void _checkCompletedMission() {
+    if (_distance >= kmRequired) {
+      _reSelectCurrentMission(campaignId, mission);
+      _updateUserCompletedMissions(mission);
+    }
+  }
+
+  void _updateUserCompletedMissions(String mission) {
+    var completedList = [];
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final ref =
+          FirebaseDatabase.instance.ref().child('profiles').child(user.uid);
+      ref.onValue.listen((event) {
+        final eventValue = event.snapshot.value;
+        if (eventValue != null) {
+          final data = Map<String, dynamic>.from(eventValue as Map);
+          if (data['completedMissions'] != null) {
+            if (data[campaignId] != null) {
+              // we found our campaign missions here now we need to add it to the map
+              var x = data['completedMissions'][campaignId];
+              x[mission] = "";
+              ref.child('completedMissions').child(campaignId).set(x);
+            }
+          }
+        }
+      }, onError: (error) {
+        // Log any errors
+      });
+    }
+  }
+
+  void _getKmRequired(campaign, mission) {
+    final ref = FirebaseDatabase.instance
+        .ref()
+        .child('Campaign')
+        .child(campaign)
+        .child('missions')
+        .child(mission);
+    ref.onValue.listen((event) {
+      final eventValue = event.snapshot.value;
+      if (eventValue != null) {
+        final data = Map<String, dynamic>.from(eventValue as Map);
+        if (data['km'] != null) {
+          if (mounted) {
+            setState(() {
+              kmRequired = data['km'];
+            });
+          }
+        }
+      }
+    }, onError: (error) {
+      // Log any errors
+    });
   }
 
   Future<void> _requestLocationPermission() async {
@@ -248,6 +375,7 @@ class RunTrackingPageState extends State<RunTrackingPage> {
 
           // TODO: Upload the image file to a server or cloud storage
         }
+        _checkCompletedMission();
         final run = {
           'name': runName,
           'distance': _distance.toStringAsFixed(2),
