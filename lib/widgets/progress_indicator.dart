@@ -3,9 +3,8 @@ import 'package:percent_indicator/circular_percent_indicator.dart';
 
 class ProgressIndicatorWidget extends StatelessWidget {
   final Map<String, dynamic>? runRecommendation;
-  final List<Map<String, dynamic>> pastRuns;
 
-  const ProgressIndicatorWidget({Key? key, required this.runRecommendation, required this.pastRuns}) : super(key: key);
+  const ProgressIndicatorWidget({Key? key, required this.runRecommendation}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -32,31 +31,20 @@ class ProgressIndicatorWidget extends StatelessWidget {
       int completedRuns = 0;
 
       runRecommendation!.forEach((week, runs) {
-        runs.forEach((run, details) {
-          if (_isValidRun(details)) {
-            totalRuns++;
-            if (_checkIfRunCompleted(details)) {
-              completedRuns++;
+        if (runs is Map<String, dynamic>) {
+          runs.forEach((run, details) {
+            if (details is Map<String, dynamic>) {
+              totalRuns++;
+              if (details['completed'] == true) {
+                completedRuns++;
+              }
             }
-          }
-        });
+          });
+        }
       });
 
       return totalRuns > 0 ? completedRuns / totalRuns : 0.0;
     }
     return 0.0;
-  }
-
-  bool _isValidRun(String details) {
-    return details.contains('Run') && details.contains('m') && details.contains('pace');
-  }
-
-  bool _checkIfRunCompleted(String details) {
-    for (var run in pastRuns) {
-      if (details.contains(run['distance'].toString()) && details.contains(run['pace'])) {
-        return true;
-      }
-    }
-    return false;
   }
 }
