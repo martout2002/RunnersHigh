@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:runners_high/home_page.dart';
+import 'package:runners_high/running/running_missions.dart';
 import 'package:runners_high/social/friend_page.dart';
 import '../running/run_history_page.dart';
 import '../UserProfilePage.dart';
@@ -28,6 +29,17 @@ class NavDrawer extends StatelessWidget {
             ),
           ),
           ListTile(
+            leading: const Icon(Icons.home),
+            title: const Text('Home'),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => HomePage(onToggleTheme: () {}),
+                ),
+              );
+            },
+          ),
+          ListTile(
             leading: const Icon(Icons.verified_user),
             title: const Text('Profile'),
             onTap: () => {
@@ -50,6 +62,17 @@ class NavDrawer extends StatelessWidget {
             },
           ),
           ListTile(
+            leading: const Icon(Icons.map),
+            title: const Text('Campaigns'),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => CampaignPage(),
+                ),
+              );
+            },
+          ),
+          ListTile(
             leading: const Icon(Icons.person),
             title: const Text('Friends'),
             onTap: () {
@@ -64,17 +87,6 @@ class NavDrawer extends StatelessWidget {
             leading: const Icon(Icons.settings),
             title: const Text('Settings'),
             onTap: () => {Navigator.of(context).pop()},
-          ),
-          ListTile(
-            leading: const Icon(Icons.home),
-            title: const Text('Home'),
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => HomePage(onToggleTheme: () {}),
-                ),
-              );
-            },
           ),
           ListTile(
             leading: const Icon(Icons.exit_to_app),
