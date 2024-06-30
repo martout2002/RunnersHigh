@@ -10,6 +10,9 @@ class ProgressIndicatorWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     double progress = _calculateProgress();
 
+    // Determine the text color based on the current theme
+    Color textColor = Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black;
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: CircularPercentIndicator(
@@ -18,7 +21,7 @@ class ProgressIndicatorWidget extends StatelessWidget {
         percent: progress,
         center: Text(
           "${(progress * 100).toStringAsFixed(1)}%",
-          style: const TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold, color: textColor),
         ),
         progressColor: Colors.blue,
       ),
