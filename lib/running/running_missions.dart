@@ -1,48 +1,127 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:runners_high/running/campaign_missions_display_page.dart';
 
-class CampaignPage extends StatelessWidget {
+class CampaignPage extends StatefulWidget {
+  const CampaignPage({Key? key}) : super(key: key);
+
+  @override
+  CampaignPageState createState() => CampaignPageState();
+}
+
+class CampaignPageState extends State<CampaignPage> {
+  List<Map<String, dynamic>> _campaigns = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _initCampaignData();
+  }
+
+  void _initCampaignData() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final campaignRef = FirebaseDatabase.instance.ref().child('Campaign');
+      campaignRef.onValue.listen((event) {
+        if (event.snapshot.value != null) {
+          final data = Map<String, dynamic>.from(event.snapshot.value as Map);
+          print(data);
+          setState(() {
+            _campaigns = data.keys
+                .map((key) =>
+                    {'id': key, ...Map<String, dynamic>.from(data[key])})
+                .toList();
+          });
+          _campaigns.sort((a, b) => a['id'].compareTo(b['id']));
+        } else {}
+      }, onError: (error) {});
+    } else {}
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-          title: const Text('Campaign',
-              style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24.0,
-                  fontWeight: FontWeight.bold)),
-          backgroundColor: Color.fromARGB(255, 60, 60, 60)),
-      body: Container(
-        color: const Color.fromARGB(255, 20, 20, 20),
-        child: ListView(
-          padding: EdgeInsets.all(16.0),
-          children: [
-            CampaignBanner(
-              image: AssetImage('assets/images/c1.png'),
-              text: '5 Missions | 25 km',
-              subtitle:
-                  'Hurry we need your insane running and parkour skills to save the last of humanity!',
-              onPressed: () {},
-            ),
-            CampaignBanner(
-              image: AssetImage('assets/images/c2.png'),
-              text: '8 Missions | 42 Km',
-              subtitle:
-                  'Stranded. You must journey through the barren rocky wastelands of Jupiter to find your way home!',
-              onPressed: () {},
-            ),
-            CampaignBanner(
-              image: AssetImage('assets/images/c3.png'),
-              text: '14 Missions | 132 Km',
-              subtitle:
-                  'Are you up to the challenge? Journey accross the kingdom and slay the red dragon smog!',
-              onPressed: () {},
-            ),
-            // Add more CampaignBanners as needed
-          ],
-        ),
-      ),
-    );
+        appBar: AppBar(
+            title: const Text('Campaign',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24.0,
+                    fontWeight: FontWeight.bold)),
+            backgroundColor: Color.fromARGB(255, 60, 60, 60)),
+        body: Container(
+          color: const Color.fromARGB(255, 20, 20, 20),
+          child: ListView.builder(
+            itemCount: _campaigns.length,
+            padding: EdgeInsets.all(16.0),
+            itemBuilder: (context, index) {
+              final campaign = _campaigns[index];
+              final campaignId = campaign['id'];
+              final km = campaign['km'];
+              final num_of_runs = campaign['num_of_runs'];
+              print("assets/images/$campaignId.png");
+
+              return CampaignBanner(
+                image: AssetImage("assets/images/$campaignId.png"),
+                text: "$num_of_runs Missions | $km km",
+                subtitle: campaign['subText'],
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => CampaignMissionsDisplayPage(
+                              campaignId: campaignId,
+                            )),
+                  );
+                },
+              );
+            },
+          ),
+        ));
   }
+
+  // @override
+  // Widget build(BuildContext context) {
+  //   return Scaffold(
+  //     appBar: AppBar(
+  //         title: const Text('Campaign',
+  //             style: TextStyle(
+  //                 color: Colors.white,
+  //                 fontSize: 24.0,
+  //                 fontWeight: FontWeight.bold)),
+  //         backgroundColor: Color.fromARGB(255, 60, 60, 60)),
+  //     body: Container(
+  //       color: const Color.fromARGB(255, 20, 20, 20),
+  //       child: ListView(
+  //         padding: EdgeInsets.all(16.0),
+  //         children: [
+  //           CampaignBanner(
+  //             image: AssetImage('assets/images/C1.png'),
+  //             text: '5 Missions | 25 km',
+  //             subtitle:
+  //                 'Hurry we need your insane running and parkour skills to save the last of humanity!',
+  //             onPressed: () {},
+  //           ),
+  //           CampaignBanner(
+  //             image: AssetImage('assets/images/C2.png'),
+  //             text: '8 Missions | 42 Km',
+  //             subtitle:
+  //                 'Stranded. You must journey through the barren rocky wastelands of Jupiter to find your way home!',
+  //             onPressed: () {},
+  //           ),
+  //           CampaignBanner(
+  //             image: AssetImage('assets/images/C3.png'),
+  //             text: '14 Missions | 132 Km',
+  //             subtitle:
+  //                 'Are you up to the challenge? Journey accross the kingdom and slay the red dragon smog!',
+  //             onPressed: () {},
+  //           ),
+  //           // Add more CampaignBanners as needed
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 }
 
 class CampaignBanner extends StatelessWidget {
