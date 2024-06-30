@@ -36,7 +36,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
             age = data['age'];
             exp = data['experience'];
             goal = data['goal'];
-            total_km = data['total_distance'];
+            total_km = double.parse(data['total_distance'].toStringAsFixed(2));
           });
         } else {
           print("No user data available");
@@ -67,7 +67,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
             children: [
               Row(
                 children: [
-                  Padding(
+                  const Padding(
                       padding: EdgeInsets.fromLTRB(40, 0, 0, 0),
                       child: CircleAvatar(
                         foregroundImage: AssetImage('assets/images/pfp.jpg'),

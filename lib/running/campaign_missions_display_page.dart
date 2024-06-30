@@ -245,7 +245,7 @@ class _CampaignMissionsDisplayPageState
             int indexMinus = index + 1;
             var mission = entry.value;
             bool isCompleted = _userCompletedMissions
-                .contains("M$indexMinus"); // Check if mission is completed
+                .contains("m$indexMinus"); // Check if mission is completed
             return Container(
               margin: const EdgeInsets.all(8),
               padding: const EdgeInsets.all(16),

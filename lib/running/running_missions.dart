@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +15,8 @@ class CampaignPage extends StatefulWidget {
 class CampaignPageState extends State<CampaignPage> {
   List<Map<String, dynamic>> _campaigns = [];
   var _userCurrentCampaign = "null";
+  late StreamSubscription _subscription;
+  late StreamSubscription _subscription2;
 
   @override
   void initState() {
@@ -20,13 +24,19 @@ class CampaignPageState extends State<CampaignPage> {
     _initCampaignData();
     _checkCurrentCampaign();
   }
+  @override
+  void dispose() {
+    _subscription.cancel();
+    _subscription2.cancel();
+    super.dispose();
+  }
 
   void _checkCurrentCampaign() {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       final ref =
           FirebaseDatabase.instance.ref().child('profiles').child(user.uid);
-      ref.onValue.listen((event) {
+      _subscription = ref.onValue.listen((event) {
         final eventValue = event.snapshot.value;
         if (eventValue != null) {
           final data = Map<String, dynamic>.from(eventValue as Map);
@@ -46,7 +56,7 @@ class CampaignPageState extends State<CampaignPage> {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       final campaignRef = FirebaseDatabase.instance.ref().child('Campaign');
-      campaignRef.onValue.listen((event) {
+      _subscription2 = campaignRef.onValue.listen((event) {
         if (event.snapshot.value != null) {
           final data = Map<String, dynamic>.from(event.snapshot.value as Map);
           print(data);

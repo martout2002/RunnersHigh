@@ -42,10 +42,13 @@ class RunTrackingPageState extends State<RunTrackingPage> {
   StreamSubscription<Position>? _positionStreamSubscription;
   bool _completedMission = false;
   var kmRequired = 0.0;
-  var campaignId = "";
+  String campaignId = "";
   var mission = "";
+  var campaignLength = 0;
 
   late StreamSubscription _missionSubscription;
+  late StreamSubscription _campaignSubscription;
+  late StreamSubscription kmListener;
 
   @override
   void initState() {
@@ -54,6 +57,8 @@ class RunTrackingPageState extends State<RunTrackingPage> {
     _requestLocationPermission();
     _getCurrentLocationAndSetMap();
     _accessCurrentMissionData();
+    
+    
   }
 
   @override
@@ -61,6 +66,8 @@ class RunTrackingPageState extends State<RunTrackingPage> {
     _timer?.cancel();
     _positionStreamSubscription?.cancel();
     _missionSubscription.cancel();
+    kmListener.cancel();
+    _campaignSubscription.cancel();
     super.dispose();
   }
 
@@ -89,13 +96,27 @@ class RunTrackingPageState extends State<RunTrackingPage> {
         if (eventValue != null) {
           final data = Map<String, dynamic>.from(eventValue as Map);
           if (data['currentCampaign'] != null) {
-            campaignId = data['currentCampaign'];
+            if (mounted) {
+              setState(() {
+                campaignId = data['currentCampaign'];
+                
+              });
+            }
             if (data['currentMission'] != null) {
-              mission = data['currentMission'];
+              if (mounted) {
+                setState(() {
+                  mission = data['currentMission'];
+                });
+              }
+              
             }
           }
         }
-        _getKmRequired(campaignId, mission);
+        print("Setting some shit now");
+        if (mission != 'null' || mission != null) {
+          _getKmRequired(campaignId, mission);
+        }
+        
       }, onError: (error) {
         // Log any errors
       });
@@ -110,20 +131,30 @@ class RunTrackingPageState extends State<RunTrackingPage> {
       final eventValue = event.snapshot.value;
       if (eventValue != null) {
         final data = Map<String, dynamic>.from(eventValue as Map);
-        length = data['km'];
+        print("data inside _reselect method: $data");
+        print("num of runs: ${data['num_of_runs']}");
+        setState(() {
+          length = data['num_of_runs'];
+        });
+
+        if (mounted) {
+          print("This is the missionID: $missionId");
+          int mission_as_int = int.parse(missionId.substring(1));
+          print("id after parse: $mission_as_int");
+          print("checking length now: $length");
+          print("is mission less than length? : ${mission_as_int < data['num_of_runs']}");
+          if (mission_as_int < data['num_of_runs']) {
+            _setCurrentMission("m${mission_as_int + 1}");
+          } else {
+            _setCurrentMission('null');
+          }
+        }
+        
       }
     }, onError: (error) {
       // Log any errors
     });
-    if (mounted) {
-      int mission_as_int = int.parse(missionId.substring(1));
-
-      if (mission_as_int < length) {
-        _setCurrentMission("m${length + 1}");
-      } else {
-        _setCurrentMission('null');
-      }
-    }
+    
   }
 
   void _setCurrentMission(String id) {
@@ -143,28 +174,48 @@ class RunTrackingPageState extends State<RunTrackingPage> {
   }
 
   void _checkCompletedMission() {
+    print("Distance clocked   $_distance");
+    print("Km required   $kmRequired");
     if (_distance >= kmRequired) {
-      _reSelectCurrentMission(campaignId, mission);
-      _updateUserCompletedMissions(mission);
+      if (mission != null || mission != 'null') {
+        _reSelectCurrentMission(campaignId, mission);
+        _updateUserCompletedMissions(mission);
+      }
+      
     }
   }
 
   void _updateUserCompletedMissions(String mission) {
+    print("updating completed missions");
+    String fuckwit = campaignId.toString();
+    print("this is fuckwit: $campaignId");
     var completedList = [];
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       final ref =
           FirebaseDatabase.instance.ref().child('profiles').child(user.uid);
-      ref.onValue.listen((event) {
+      _campaignSubscription = ref.onValue.listen((event) {
         final eventValue = event.snapshot.value;
         if (eventValue != null) {
           final data = Map<String, dynamic>.from(eventValue as Map);
+          // print("data inside updating completed missions here: $data");
+          // print("data inside updating completed missions for thing: ${data['completedMissions']}");
           if (data['completedMissions'] != null) {
-            if (data[campaignId] != null) {
+            // print("campaign id is like this: $campaignId");
+            // print("looking at CID inside update back: ${data["completedMissions"]["C1"]}");
+            if (data['completedMissions'][campaignId] != null) {
               // we found our campaign missions here now we need to add it to the map
               var x = data['completedMissions'][campaignId];
-              x[mission] = "";
-              ref.child('completedMissions').child(campaignId).set(x);
+              // print("x is here: $x");
+              final outgoing_list = x..addAll({mission: " "});
+              ref.child('completedMissions').child(campaignId).set(outgoing_list);
+            } else {
+              if (campaignId != "null") {
+                final missionsList = data['completedMissions'];
+                final outgoing_list = {...missionsList, campaignId: {mission: " "}};
+                ref.child('completedMissions').set(outgoing_list);
+              }
+              
             }
           }
         }
@@ -175,21 +226,29 @@ class RunTrackingPageState extends State<RunTrackingPage> {
   }
 
   void _getKmRequired(campaign, mission) {
+    print("campaign: $campaign");
+    print("missions: $mission");
     final ref = FirebaseDatabase.instance
         .ref()
         .child('Campaign')
         .child(campaign)
         .child('missions')
         .child(mission);
-    ref.onValue.listen((event) {
+    kmListener = ref.onValue.listen((event) {
       final eventValue = event.snapshot.value;
       if (eventValue != null) {
-        final data = Map<String, dynamic>.from(eventValue as Map);
+        final data = Map<dynamic, dynamic>.from(eventValue as Map);
+        print("debugging data");
+        print("data is here: $data");
+        //print("km is here: ${data['km']}");
         if (data['km'] != null) {
+          print("moutning check");
           if (mounted) {
+            print("here it is indeed mounted");
             setState(() {
-              kmRequired = data['km'];
+              kmRequired = data['km'].toDouble();
             });
+            print("setting state of kmRequired bruh");
           }
         }
       }
@@ -462,7 +521,7 @@ class RunTrackingPageState extends State<RunTrackingPage> {
             initialCameraPosition: const CameraPosition(
               target: LatLng(
                   0, 0), // Placeholder, will be updated to user's location
-              zoom: 20,
+              zoom: 14,
             ),
             myLocationEnabled: true, // Enable the user's location
             myLocationButtonEnabled: true,
