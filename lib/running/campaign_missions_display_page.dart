@@ -1,3 +1,7 @@
+import 'dart:async';
+
+import 'package:firebase_database/firebase_database.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -17,6 +21,8 @@ class CampaignMissionsDisplayPage extends StatefulWidget {
 
 class _CampaignMissionsDisplayPageState
     extends State<CampaignMissionsDisplayPage> {
+  late StreamSubscription _campaignSubscription;
+  late StreamSubscription _missionSubscription;
   List<Map<dynamic, dynamic>> _campaignData = [];
   List<Map<dynamic, dynamic>> _campaignMissions = [];
   List<dynamic> _userCompletedMissions = [];
@@ -33,6 +39,7 @@ class _CampaignMissionsDisplayPageState
 
   @override
   void dispose() {
+    _campaignSubscription.cancel();
     super.dispose();
   }
 
@@ -45,66 +52,69 @@ class _CampaignMissionsDisplayPageState
   }
 
   void _initCampaignData() {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      final campaignRef = FirebaseDatabase.instance
-          .ref()
-          .child('Campaign')
-          .child(widget.campaignId);
-      campaignRef.onValue.listen((event) {
-        if (event.snapshot.value != null) {
-          final data = Map<dynamic, dynamic>.from(event.snapshot.value as Map);
-          print("data : $data");
+    if (mounted) {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final campaignRef = FirebaseDatabase.instance
+            .ref()
+            .child('Campaign')
+            .child(widget.campaignId);
+        _campaignSubscription = campaignRef.onValue.listen((event) {
+          if (event.snapshot.value != null) {
+            final data =
+                Map<dynamic, dynamic>.from(event.snapshot.value as Map);
+            print("data : $data");
 
-          setState(() {
-            _campaignData = data.keys.map((key) {
-              // Check if the value is a map and handle accordingly
-              if (data[key] is Map) {
-                return {'id': key, ...Map<dynamic, dynamic>.from(data[key])};
-              } else {
-                // For non-map values, just return a simple map with 'id' and 'value'
-                return {'id': key, 'value': data[key]};
-              }
-            }).toList();
-
-            campaignName = data['name'] ?? 'Campaign';
-
-            // Assuming _campaignMissions needs to be populated from the 'missions' map
-            if (data.containsKey('missions') && data['missions'] is Map) {
-              var missionsData = Map<dynamic, dynamic>.from(data['missions']);
-              _campaignMissions = missionsData.keys.map((key) {
-                return {
-                  'id': key,
-                  ...Map<dynamic, dynamic>.from(missionsData[key])
-                };
+            setState(() {
+              _campaignData = data.keys.map((key) {
+                // Check if the value is a map and handle accordingly
+                if (data[key] is Map) {
+                  return {'id': key, ...Map<dynamic, dynamic>.from(data[key])};
+                } else {
+                  // For non-map values, just return a simple map with 'id' and 'value'
+                  return {'id': key, 'value': data[key]};
+                }
               }).toList();
-            } else {
-              _campaignMissions = [];
-            }
 
-            _campaignMissions = data['missions']
-                .keys
-                .map((key) {
-                  var missionData = data['missions'][key];
-                  if (missionData is Map) {
-                    // This ensures that each element in the list is a Map<dynamic, dynamic>
-                    return {
-                      'id': key,
-                      ...Map<dynamic, dynamic>.from(missionData)
-                    };
-                  } else {
-                    // If the missionData is not a map, we need to handle this case.
-                    // For example, you might want to skip this element or handle it differently.
-                    // Here, we'll return null for non-map values, and then filter them out.
-                    return null;
-                  }
-                })
-                .where((element) => element != null)
-                .cast<Map<dynamic, dynamic>>()
-                .toList();
-          });
-        }
-      });
+              campaignName = data['name'] ?? 'Campaign';
+
+              // Assuming _campaignMissions needs to be populated from the 'missions' map
+              if (data.containsKey('missions') && data['missions'] is Map) {
+                var missionsData = Map<dynamic, dynamic>.from(data['missions']);
+                _campaignMissions = missionsData.keys.map((key) {
+                  return {
+                    'id': key,
+                    ...Map<dynamic, dynamic>.from(missionsData[key])
+                  };
+                }).toList();
+              } else {
+                _campaignMissions = [];
+              }
+
+              _campaignMissions = data['missions']
+                  .keys
+                  .map((key) {
+                    var missionData = data['missions'][key];
+                    if (missionData is Map) {
+                      // This ensures that each element in the list is a Map<dynamic, dynamic>
+                      return {
+                        'id': key,
+                        ...Map<dynamic, dynamic>.from(missionData)
+                      };
+                    } else {
+                      // If the missionData is not a map, we need to handle this case.
+                      // For example, you might want to skip this element or handle it differently.
+                      // Here, we'll return null for non-map values, and then filter them out.
+                      return null;
+                    }
+                  })
+                  .where((element) => element != null)
+                  .cast<Map<dynamic, dynamic>>()
+                  .toList();
+            });
+          }
+        });
+      }
     }
   }
 
@@ -139,28 +149,56 @@ class _CampaignMissionsDisplayPageState
   void _checkCompletedMissions() {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      final ref =
-          FirebaseDatabase.instance.ref().child('profiles').child(user.uid);
+      if (mounted) {
+        final ref =
+            FirebaseDatabase.instance.ref().child('profiles').child(user.uid);
 
-      ref.onValue.listen((event) {
-        final eventValue = event.snapshot.value;
-        if (eventValue != null) {
-          final data = Map<String, dynamic>.from(eventValue as Map);
-          print(data['completedMissions']);
-          print(data['completedMissions']['C1']);
-          if (data['completedMissions'] != null) {
-            if (data['completedMissions'][widget.campaignId] != null) {
-              setState(() {
-                _userCompletedMissions =
-                    data['completedMissions'][widget.campaignId].keys.toList();
-              });
-              print(_userCompletedMissions);
+        _missionSubscription = ref.onValue.listen((event) {
+          final eventValue = event.snapshot.value;
+          if (eventValue != null) {
+            final data = Map<String, dynamic>.from(eventValue as Map);
+            if (data['completedMissions'] != null) {
+              if (data['completedMissions'][widget.campaignId] != null) {
+                setState(() {
+                  _userCompletedMissions = data['completedMissions']
+                          [widget.campaignId]
+                      .keys
+                      .toList();
+                });
+              }
             }
           }
-        }
-      }, onError: (error) {
-        // Log any errors
-      });
+          _reSelectCurrentMission();
+        }, onError: (error) {
+          // Log any errors
+        });
+      }
+    }
+  }
+
+  void _reSelectCurrentMission() {
+    if (mounted) {
+      int length = 0;
+      if (_campaignData[3] != null) {
+        length = _campaignData[3]['value'];
+      }
+
+      if (_userCompletedMissions.length != length) {
+        _setCurrentMission("M${_userCompletedMissions.length + 1}");
+      } else {
+        _setCurrentMission('null');
+      }
+    }
+  }
+
+  void _setCurrentMission(String id) {
+    if (mounted) {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final ref =
+            FirebaseDatabase.instance.ref().child('profiles').child(user.uid);
+        ref.child('currentMission').set(id);
+      }
     }
   }
 
