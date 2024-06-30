@@ -144,6 +144,7 @@ class _CampaignMissionsDisplayPageState
       setState(() {
         currentCampaignAccurate = false;
       });
+      _setCurrentMission("null");
     }
   }
 
@@ -184,8 +185,8 @@ class _CampaignMissionsDisplayPageState
         length = _campaignData[3]['value'];
       }
 
-      if (_userCompletedMissions.length != length) {
-        _setCurrentMission("M${_userCompletedMissions.length + 1}");
+      if (_userCompletedMissions.length < length) {
+        _setCurrentMission("m${_userCompletedMissions.length + 1}");
       } else {
         _setCurrentMission('null');
       }
@@ -195,10 +196,15 @@ class _CampaignMissionsDisplayPageState
   void _setCurrentMission(String id) {
     if (mounted) {
       final user = FirebaseAuth.instance.currentUser;
+
       if (user != null) {
         final ref =
             FirebaseDatabase.instance.ref().child('profiles').child(user.uid);
-        ref.child('currentMission').set(id);
+        if (id == 'null') {
+          ref.child('currentMission').set('null');
+        } else {
+          ref.child('currentMission').set(id);
+        }
       }
       setState(() {
         currentMission = id;
@@ -248,7 +254,7 @@ class _CampaignMissionsDisplayPageState
                     ? const Color.fromARGB(255, 47, 77, 48)
                     : const Color.fromARGB(255, 40, 40, 40),
                 border: Border.all(
-                  color: currentMission == "M$indexMinus" &&
+                  color: currentMission == "m$indexMinus" &&
                           currentCampaignAccurate == true
                       ? const Color.fromARGB(255, 119, 189, 253)
                       : Colors.transparent,
