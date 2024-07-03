@@ -32,8 +32,16 @@ class _RecommendationWidgetState extends State<RecommendationWidget> {
   Future<void> _toggleRunCompletion(String week, String runKey) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      final ref = FirebaseDatabase.instance.ref().child('recommendations').child(user.uid).child('recommendation').child(week).child(runKey).child('completed');
+      final ref = FirebaseDatabase.instance
+          .ref()
+          .child('recommendations')
+          .child(user.uid)
+          .child('recommendation')
+          .child(week)
+          .child(runKey)
+          .child('completed');
       bool isCompleted = widget.recommendation[week][runKey]['completed'] ?? false;
+      log('Toggling run completion: $week - $runKey from $isCompleted to ${!isCompleted}');
       try {
         await ref.set(!isCompleted);
         setState(() {
@@ -58,8 +66,8 @@ class _RecommendationWidgetState extends State<RecommendationWidget> {
 
   @override
   Widget build(BuildContext context) {
-    log('Recommendation data: ${widget.recommendation}'); // Debugging log
-    log('Past runs data: ${widget.pastRuns}'); // Debugging log
+    // log('Recommendation data: ${widget.recommendation}'); // Debugging log
+    // log('Past runs data: ${widget.pastRuns}'); // Debugging log
 
     // Sort keys in ascending order
     var sortedKeys = widget.recommendation.keys.toList()
@@ -70,7 +78,7 @@ class _RecommendationWidgetState extends State<RecommendationWidget> {
       itemBuilder: (context, index) {
         String phaseKey = sortedKeys[index];
         var phaseDetails = widget.recommendation[phaseKey];
-        log('Phase details for $phaseKey: $phaseDetails'); // Debugging log
+        // log('Phase details for $phaseKey: $phaseDetails'); // Debugging log
 
         // Sort runs in ascending order
         var sortedRuns = phaseDetails.keys.toList()
