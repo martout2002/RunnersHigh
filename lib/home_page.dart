@@ -108,6 +108,7 @@ class HomePageState extends State<HomePage> {
           setState(() {
             _runRecommendation = Map<String, dynamic>.from(
                 storedRecommendation['recommendation']);
+            log('Loaded stored recommendation: $_runRecommendation');
           });
         }
         return;
@@ -133,6 +134,7 @@ class HomePageState extends State<HomePage> {
         setState(() {
           _runRecommendation =
               _geminiService.processRecommendation(recommendation!);
+          log('Fetched new recommendation: $_runRecommendation');
         });
       }
     }
@@ -153,18 +155,22 @@ class HomePageState extends State<HomePage> {
         final userRef =
             FirebaseDatabase.instance.ref().child('profiles').child(user.uid);
         await userRef.child('recommendation').set(newRecommendationData);
+        log('Regenerated recommendation: $_runRecommendation');
       }
     }
   }
 
   void _updateRecommendation(Map<String, dynamic> updatedRecommendation) {
+    log('Updating recommendation in HomePage');
     setState(() {
       _runRecommendation = updatedRecommendation;
+      // log('Updated runRecommendation: $_runRecommendation');
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    // log('HomePage build method - runRecommendation: $_runRecommendation');
     return Scaffold(
       appBar: CustomAppBar(
           title: 'Run Tracker', onToggleTheme: widget.onToggleTheme),
@@ -211,4 +217,3 @@ class HomePageState extends State<HomePage> {
     );
   }
 }
-

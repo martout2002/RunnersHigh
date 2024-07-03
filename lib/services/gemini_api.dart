@@ -26,7 +26,7 @@ class GeminiService {
         final data = (snapshot.value as Map).map<String, dynamic>(
           (key, value) => MapEntry(key as String, value as dynamic),
         );
-        log('User profile data retrieved: $data');
+        // log('User profile data retrieved: $data');
         return data;
       }
     }
@@ -111,7 +111,7 @@ class GeminiService {
         final data = (snapshot.value as Map).map<String, dynamic>(
           (key, value) => MapEntry(key as String, value as dynamic),
         );
-        log('Stored recommendation retrieved: $data');
+        // log('Stored recommendation retrieved: $data');
         return data;
       }
     }
