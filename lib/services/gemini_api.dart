@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter_gemini/flutter_gemini.dart';
@@ -5,6 +7,9 @@ import 'dart:developer';
 
 class GeminiService {
   final Gemini gemini = Gemini.instance;
+  //TODO: Change the file to an image with a running programme template
+  final file = File('assets/img.png');
+  
 
   final String runRecommendationPrompt = "You are a personal fitness instructor. Every month has 4 weeks, a year has 52 weeks. Based on the history: {userHistory}, the goal: {userGoal}, and the comfortable pace: {userPace} min/km, what is the recommended run program? "
       "Please provide the program in the following format with distances in km and pace in min/km: "
@@ -35,7 +40,9 @@ class GeminiService {
 
   Future<String?> _fetchRunRecommendation(String prompt) async {
     try {
-      final response = await gemini.text(prompt);
+      final response = await gemini.textAndImage(
+        text: prompt,
+        images: [file.readAsBytesSync()]);
       return response?.output;
     } catch (e) {
       log('Error fetching recommendation: $e');
