@@ -25,6 +25,8 @@ class HomePageState extends State<HomePage> {
   String? _userGoal;
   String? _userPace;
   late GeminiService _geminiService;
+  bool _isRetrying = false;
+  int _retryCount = 0;
 
   @override
   void initState() {
@@ -108,6 +110,8 @@ class HomePageState extends State<HomePage> {
           setState(() {
             _runRecommendation = Map<String, dynamic>.from(
                 storedRecommendation['recommendation']);
+            _isRetrying = false; // Reset retry status on success
+            _retryCount = 0;
           });
         }
         return;
@@ -117,14 +121,14 @@ class HomePageState extends State<HomePage> {
     String? recommendation;
     if (_pastRuns.isEmpty) {
       recommendation = await _geminiService.getRunRecommendationBasedOnGoal(
-          _userGoal, _userPace);
+          _userGoal, _userPace, onRetry: _onRetry);
     } else {
       final userHistory = _pastRuns
           .map((run) =>
               "Run on ${run['date']}: ${run['distance']} meters at ${run['pace']} pace")
           .join("\n");
       recommendation = await _geminiService.getRunRecommendation(
-          userHistory, _userGoal, _userPace);
+          userHistory, _userGoal, _userPace, onRetry: _onRetry);
     }
 
     if (recommendation != null) {
@@ -133,22 +137,33 @@ class HomePageState extends State<HomePage> {
         setState(() {
           _runRecommendation =
               _geminiService.processRecommendation(recommendation!);
+          _isRetrying = false; // Reset retry status on success
+          _retryCount = 0;
         });
       }
     }
+  }
+
+  void _onRetry(int attempt) {
+    setState(() {
+      _isRetrying = true;
+      _retryCount = attempt;
+    });
   }
 
   Future<void> _regenerateRunRecommendation() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       String? newRecommendation = await _geminiService
-          .getRunRecommendationBasedOnGoal(_userGoal, _userPace);
+          .getRunRecommendationBasedOnGoal(_userGoal, _userPace, onRetry: _onRetry);
       if (newRecommendation != null) {
         final newRecommendationData =
             _geminiService.processRecommendation(newRecommendation);
         await _geminiService.storeRecommendation(newRecommendation);
         setState(() {
           _runRecommendation = newRecommendationData;
+          _isRetrying = false; // Reset retry status on success
+          _retryCount = 0;
         });
         final userRef =
             FirebaseDatabase.instance.ref().child('profiles').child(user.uid);
@@ -171,6 +186,14 @@ class HomePageState extends State<HomePage> {
       drawer: const NavDrawer(),
       body: Column(
         children: [
+          if (_isRetrying)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                'Retrying to fetch recommendation... Attempt $_retryCount',
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
           ProgressIndicatorWidget(runRecommendation: _runRecommendation),
           if (_runRecommendation != null)
             Flexible(
@@ -211,4 +234,3 @@ class HomePageState extends State<HomePage> {
     );
   }
 }
-
