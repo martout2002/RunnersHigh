@@ -1,0 +1,251 @@
+[33mcommit f09346caf764b44e696db7d1308339494526b81b[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: Martin Ng <martin@Martins-MacBook-Pro-2.local>
+Date:   Wed Jul 10 13:19:12 2024 +0800
+
+    now gemini api takes in images so we can add in stuff to make the recommendations more optimised
+
+[33mcommit 9f9c000af0693f2f52635eccc8f41a19c7770700[m
+Merge: 224d9f5 c3415de
+Author: Martin Ng <98628662+martout2002@users.noreply.github.com>
+Date:   Wed Jul 3 10:21:09 2024 +0800
+
+    Merge pull request #27 from martout2002/main
+    
+    progress indicator working
+
+[33mcommit c3415de101409a47cad09abeb6889005921549b3[m
+Author: Martin Ng <martin@Martins-MacBook-Pro-2.local>
+Date:   Wed Jul 3 10:20:12 2024 +0800
+
+    progress indicator working
+
+[33mcommit 224d9f5d95fe2e9c3054b9ea24bbdbcc387dde3e[m
+Author: Shaun <Hundin231@gmail.com>
+Date:   Mon Jul 1 10:53:39 2024 +0800
+
+    Rename c2.png to C2.png
+
+[33mcommit 4104c11644a5ab5f8d751e02c237f70788959c5b[m
+Author: Shaun <Hundin231@gmail.com>
+Date:   Mon Jul 1 10:53:27 2024 +0800
+
+    Rename c1.png to C1.png
+
+[33mcommit 8e1ac30d8de7a21c4f9334149bfd71dfa2528a28[m
+Author: Shaun <Hundin231@gmail.com>
+Date:   Mon Jul 1 10:53:14 2024 +0800
+
+    Rename c3.png to C3.png
+
+[33mcommit 8368261e71dc4e2b3e3d2c8d4331fd13c53420da[m
+Merge: 0652cd9 0a6b2d8
+Author: Hoodini231 <hundin231@gmail.com>
+Date:   Sun Jun 30 23:26:58 2024 +0800
+
+    divergent branch thus the merge
+    Merge branch 'main' of https://github.com/Hoodini231/RunnersHigh
+
+[33mcommit 0652cd984e0d5f060ba91f2348828e004e8393e4[m
+Author: Hoodini231 <hundin231@gmail.com>
+Date:   Sun Jun 30 23:26:21 2024 +0800
+
+    when completing run, it checks to see if completes current mission if so it updates and moves to next mission
+
+[33mcommit 0a6b2d8840da976a475b219e69b3749a4ac71971[m
+Merge: 2f5bc96 7ec967a
+Author: Martin Ng <98628662+martout2002@users.noreply.github.com>
+Date:   Sun Jun 30 20:43:00 2024 +0800
+
+    Merge pull request #26 from martout2002/main
+    
+    words in the progress indicator now turn white
+
+[33mcommit 7ec967ae991a75c7575517717759c06785c3b1f7[m
+Author: unknown <martinng2002@gmail.com>
+Date:   Sun Jun 30 20:42:21 2024 +0800
+
+    words in the progress indicator now turn white
+
+[33mcommit 2f5bc9659b71552061c084a92d85829b61ac6dc4[m
+Merge: 96a5da1 ed3fdc8
+Author: Martin Ng <98628662+martout2002@users.noreply.github.com>
+Date:   Sun Jun 30 20:39:38 2024 +0800
+
+    Merge pull request #25 from martout2002/main
+    
+    merged both together
+
+[33mcommit ed3fdc891e5c8b9104b3bd41a00baae8da02be40[m
+Merge: 2c83041 96a5da1
+Author: Martin Ng <98628662+martout2002@users.noreply.github.com>
+Date:   Sun Jun 30 20:38:26 2024 +0800
+
+    Merge branch 'Hoodini231:main' into main
+
+[33mcommit 2c8304131fcc8cafe46259f56c720ac878c48890[m
+Author: unknown <martinng2002@gmail.com>
+Date:   Sun Jun 30 20:36:59 2024 +0800
+
+    progress indicator works, updates the run completion into the recommendation
+
+[33mcommit 96a5da106749ff3c501ce087bfd2f7c81459051f[m
+Author: Shaun <Hundin231@gmail.com>
+Date:   Sun Jun 30 20:32:08 2024 +0800
+
+    added logic for mission completion upon run ending
+
+[33mcommit b0d4db571eff0f6b5abf63f8e48405a6cd956cb6[m
+Merge: 83c1d48 8aceecb
+Author: Martin Ng <98628662+martout2002@users.noreply.github.com>
+Date:   Sun Jun 30 19:30:52 2024 +0800
+
+    Merge pull request #24 from martout2002/main
+    
+    can toggle and complete runs manually
+
+[33mcommit 83c1d48a89db0e642805cd14959e3d726b492de6[m
+Author: Shaun <Hundin231@gmail.com>
+Date:   Sun Jun 30 19:30:05 2024 +0800
+
+    Current mission highlighted and fixed bug where current missino was with other cmapaigns
+
+[33mcommit 8aceecb414fce57d4db98073320bd078b8ea358d[m
+Author: unknown <martinng2002@gmail.com>
+Date:   Sun Jun 30 19:30:01 2024 +0800
+
+    can toggle and complete runs manually
+
+[33mcommit f2c550b975e2ada6b9f84aba3b8f30b97e01ac1d[m
+Author: Shaun <Hundin231@gmail.com>
+Date:   Sun Jun 30 19:22:29 2024 +0800
+
+    fixed bug where changing more than once causing memory leak and crashes
+
+[33mcommit 958985b2a6bde8cab2c53b64cd6c366718bc6036[m
+Author: Shaun <Hundin231@gmail.com>
+Date:   Sun Jun 30 18:49:19 2024 +0800
+
+    User now able to select current campaigns and missions display completed and uncompleted
+
+[33mcommit 89942cddba3d8ea99fe57b715b09d461f8d33824[m
+Author: Shaun <Hundin231@gmail.com>
+Date:   Sun Jun 30 13:45:36 2024 +0800
+
+    created campaign mission display page and connected to back end
+
+[33mcommit 49c60d6f15fa86c4bfbbabddbc9b00599f6a5c3b[m
+Author: Shaun <Hundin231@gmail.com>
+Date:   Sun Jun 30 12:44:24 2024 +0800
+
+    Campaigns properlly pull data from backend
+
+[33mcommit 814e554435a52cc9db6eacd645bde2000560a9e2[m
+Author: Shaun <Hundin231@gmail.com>
+Date:   Sun Jun 30 11:47:22 2024 +0800
+
+    added a campaign mission page with custom banner pngs
+
+[33mcommit 71d0bf2e39e3c9d1c4a3c33bbd65702bf7d5ca4e[m
+Author: Shaun <Hundin231@gmail.com>
+Date:   Sat Jun 29 14:42:37 2024 +0800
+
+    debugged issue by adding functinal back button upon clicking into run
+
+[33mcommit 82f7da0bace9a3c2ca6c92a882854a1001e3cb19[m
+Author: Shaun <Hundin231@gmail.com>
+Date:   Sat Jun 29 14:34:48 2024 +0800
+
+    reject friend request functionally added
+
+[33mcommit 53b35fa0c2f668c5d0e14bab9e687ea8a3dd2dcf[m
+Author: Shaun <Hundin231@gmail.com>
+Date:   Sat Jun 29 14:33:16 2024 +0800
+
+    add friend works and debugged duplicate friend req
+
+[33mcommit c20881c2cbd988003aa615012c69c55abb709ea2[m
+Author: Shaun <Hundin231@gmail.com>
+Date:   Fri Jun 28 23:16:45 2024 +0800
+
+    added accept friend and debugged social issues
+
+[33mcommit dfd09487ce580939980b6759ab8b96084f350ac4[m
+Author: Shaun <Hundin231@gmail.com>
+Date:   Fri Jun 28 18:57:24 2024 +0800
+
+    Can now send other users via username friend req
+
+[33mcommit 6ed49732978e612d57f453cbc5668f278f4cfe4a[m
+Author: Shaun <Hundin231@gmail.com>
+Date:   Fri Jun 28 18:30:18 2024 +0800
+
+    working friend page and cards to display releveant info
+
+[33mcommit d597d0e60aea09218584b49e4ffcfe8d4af6afee[m
+Author: Shaun <Hundin231@gmail.com>
+Date:   Fri Jun 28 17:33:22 2024 +0800
+
+    added usernames and friend fields for backend
+
+[33mcommit 4f5566d199cf9ac88e40a57538132c552f18250f[m
+Author: Shaun <Hundin231@gmail.com>
+Date:   Fri Jun 28 15:08:43 2024 +0800
+
+    fixed padding
+
+[33mcommit 0831e0dedfde0c2111d631d3c04c70446e08143d[m
+Author: Shaun <Hundin231@gmail.com>
+Date:   Fri Jun 28 15:07:03 2024 +0800
+
+    added accepting friend req and adding friends functions
+
+[33mcommit b9212e6d1f52a053ac3b1a01e2e18a6189cfafc9[m
+Author: Shaun <Hundin231@gmail.com>
+Date:   Fri Jun 28 14:32:20 2024 +0800
+
+    added friend page
+
+[33mcommit 9039952423509244791320524d932d4601e3dfc2[m
+Author: Shaun <Hundin231@gmail.com>
+Date:   Fri Jun 28 14:30:46 2024 +0800
+
+    added feature to show exact bounds of the route on the map
+
+[33mcommit 66642cac4cdb95b99784fe1c3d95b05d3e5ac509[m
+Author: Shaun <Hundin231@gmail.com>
+Date:   Fri Jun 28 14:17:36 2024 +0800
+
+    added a total distance per user field and tracker when completed runs
+
+[33mcommit a0579be8f84ec53485a37f383a0b4abff9eb18bb[m
+Author: Shaun <Hundin231@gmail.com>
+Date:   Fri Jun 28 14:13:38 2024 +0800
+
+    added asset folder, added default pfp and resolved bug where num
+    of runs where increasing expoentialy
+
+[33mcommit 3ec9ad44018daff23ac473301cf38194782ca3cb[m
+Merge: f3b17ec cc7ad9f
+Author: Hoodini231 <hundin231@gmail.com>
+Date:   Fri Jun 28 12:45:52 2024 +0800
+
+    Merged requried due to divergent brances
+    Merge branch 'main' of https://github.com/Hoodini231/RunnersHigh
+
+[33mcommit f3b17ec94ae36ca761141fed0c562d7aa315d4b9[m
+Author: Hoodini231 <hundin231@gmail.com>
+Date:   Fri Jun 28 12:44:42 2024 +0800
+
+    fixed profile page to constantly pull data from db
+
+[33mcommit cc7ad9fc05f46cc4f78ed290ef65c78e6d6f8e46[m
+Merge: fc10b5d 217a138
+Author: Martin Ng <98628662+martout2002@users.noreply.github.com>
+Date:   Fri Jun 28 01:40:01 2024 +0800
+
+    Merge pull request #23 from martout2002/main
+    
+    changed api key and edited read-me
+
+[33mcommit 217a138969e981c7b9c4d0d28e01119a724b4002[m
+Author: unknown <martin

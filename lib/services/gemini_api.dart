@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter_gemini/flutter_gemini.dart';
@@ -7,9 +5,6 @@ import 'dart:developer';
 
 class GeminiService {
   final Gemini gemini = Gemini.instance;
-  //TODO: Change the file to an image with a running programme template
-  final file = File('assets/img.png');
-  
 
   final String runRecommendationPrompt = "You are a personal fitness instructor. Every month has 4 weeks, a year has 52 weeks. Based on the history: {userHistory}, the goal: {userGoal}, and the comfortable pace: {userPace} min/km, what is the recommended run program? "
       "Please provide the program in the following format with distances in km and pace in min/km: "
@@ -40,9 +35,7 @@ class GeminiService {
 
   Future<String?> _fetchRunRecommendation(String prompt) async {
     try {
-      final response = await gemini.textAndImage(
-        text: prompt,
-        images: [file.readAsBytesSync()]);
+      final response = await gemini.text(prompt);
       return response?.output;
     } catch (e) {
       log('Error fetching recommendation: $e');
@@ -50,23 +43,38 @@ class GeminiService {
     }
   }
 
-  Future<String?> getRunRecommendation(String userHistory, String? userGoal, String? userPace) async {
-    final prompt = runRecommendationPrompt
-        .replaceAll("{userHistory}", userHistory)
-        .replaceAll("{userGoal}", userGoal ?? "unspecified goal")
-        .replaceAll("{userPace}", userPace ?? "unspecified pace");
+  Future<String?> getRunRecommendation(String userHistory, String? userGoal, String? userPace, {Function(int)? onRetry}) async {
+    const maxAttempts = 3;
+    int attempt = 0;
 
-    final recommendation = await _fetchRunRecommendation(prompt);
-    if (recommendation != null && _validateRecommendation(recommendation)) {
-      return recommendation;
-    } else {
-      log('Invalid recommendation received: $recommendation');
-      return null;
+    while (attempt < maxAttempts) {
+      if (attempt > 0 && onRetry != null) {
+        onRetry(attempt); // Notify the user about retrying
+      }
+
+      final prompt = runRecommendationPrompt
+          .replaceAll("{userHistory}", userHistory)
+          .replaceAll("{userGoal}", userGoal ?? "unspecified goal")
+          .replaceAll("{userPace}", userPace ?? "unspecified pace");
+
+      final recommendation = await _fetchRunRecommendation(prompt);
+      if (recommendation != null && _validateRecommendation(recommendation)) {
+        return recommendation;
+      } else {
+        log('Invalid recommendation received: $recommendation');
+        if (onRetry != null) {
+          onRetry(attempt + 1); // Notify the user about retrying
+        }
+        await Future.delayed(const Duration(seconds: 2)); // Delay before retry
+      }
+      attempt++;
     }
+
+    return null; // Return null if all attempts fail
   }
 
-  Future<String?> getRunRecommendationBasedOnGoal(String? userGoal, String? userPace) async {
-    return getRunRecommendation("", userGoal, userPace);
+  Future<String?> getRunRecommendationBasedOnGoal(String? userGoal, String? userPace, {Function(int)? onRetry}) async {
+    return getRunRecommendation("", userGoal, userPace, onRetry: onRetry);
   }
 
   bool _validateRecommendation(String recommendation) {

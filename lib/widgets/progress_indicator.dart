@@ -1,73 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
-import 'dart:developer';
 
-class ProgressIndicatorWidget extends StatefulWidget {
+class ProgressIndicatorWidget extends StatelessWidget {
   final Map<String, dynamic>? runRecommendation;
 
-  const ProgressIndicatorWidget({super.key, required this.runRecommendation});
-
-  @override
-  _ProgressIndicatorWidgetState createState() => _ProgressIndicatorWidgetState();
-}
-
-class _ProgressIndicatorWidgetState extends State<ProgressIndicatorWidget> {
-  double _progress = 0.0;
-
-  @override
-  void initState() {
-    super.initState();
-    _calculateProgress();
-  }
-
-  @override
-  void didUpdateWidget(ProgressIndicatorWidget oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    log('ProgressIndicatorWidget didUpdateWidget called');
-    _calculateProgress();
-  }
-
-  void _calculateProgress() {
-    if (widget.runRecommendation != null) {
-      int totalRuns = 0;
-      int completedRuns = 0;
-
-      log('Calculating progress for: ${widget.runRecommendation}'); // Log the run recommendation data
-      widget.runRecommendation!.forEach((week, runs) {
-        log('Processing week: $week with runs: $runs'); // Log each week with runs data
-        if (runs is Map) {
-          runs.forEach((run, details) {
-            log('Processing run: $run with details: $details'); // Log each run
-            if (details is Map) {
-              totalRuns++;
-              if (details['completed'] == true) {
-                completedRuns++;
-              }
-            } else {
-              log('Invalid details format for run: $run'); // Log invalid format
-            }
-          });
-        } else {
-          log('Invalid runs format for week: $week - $runs'); // Log invalid format
-        }
-      });
-
-      double newProgress = totalRuns > 0 ? completedRuns / totalRuns : 0.0;
-      log('Calculated progress: $newProgress (completed: $completedRuns / total: $totalRuns)');
-      setState(() {
-        _progress = newProgress;
-      });
-    } else {
-      log('runRecommendation is null'); // Log if runRecommendation is null
-      setState(() {
-        _progress = 0.0;
-      });
-    }
-  }
+  const ProgressIndicatorWidget({Key? key, required this.runRecommendation}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    log('Building ProgressIndicatorWidget with progress: $_progress');
+    double progress = _calculateProgress();
+
     // Determine the text color based on the current theme
     Color textColor = Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black;
 
@@ -76,13 +18,36 @@ class _ProgressIndicatorWidgetState extends State<ProgressIndicatorWidget> {
       child: CircularPercentIndicator(
         radius: 100.0,
         lineWidth: 10.0,
-        percent: _progress,
+        percent: progress,
         center: Text(
-          "${(_progress * 100).toStringAsFixed(1)}%",
+          "${(progress * 100).toStringAsFixed(1)}%",
           style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold, color: textColor),
         ),
         progressColor: Colors.blue,
       ),
     );
+  }
+
+  double _calculateProgress() {
+    if (runRecommendation != null) {
+      int totalRuns = 0;
+      int completedRuns = 0;
+
+      runRecommendation!.forEach((week, runs) {
+        if (runs is Map<String, dynamic>) {
+          runs.forEach((run, details) {
+            if (details is Map<String, dynamic>) {
+              totalRuns++;
+              if (details['completed'] == true) {
+                completedRuns++;
+              }
+            }
+          });
+        }
+      });
+
+      return totalRuns > 0 ? completedRuns / totalRuns : 0.0;
+    }
+    return 0.0;
   }
 }
