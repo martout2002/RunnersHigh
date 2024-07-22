@@ -25,6 +25,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   var total_km = 0;
   var profileImage = "";
 
+
   // DatabaseReference? ref;
 
   void _getUserData() {
@@ -89,6 +90,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                           );
                         },
                         child: CircleAvatar(
+                          
                           foregroundImage: profileImage == ""
                             ? const AssetImage('assets/images/pfp.jpg')
                             : MemoryImage(base64Decode(profileImage)),
@@ -110,7 +112,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                       ),
                       // Display total km ran here
                       Text(
-                        "$total_km km",
+                        "$age years old",
                         style: const TextStyle(
                           fontSize: 16,
                           color: Colors.grey,
@@ -129,7 +131,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                           fontWeight: FontWeight.bold,
                         ))),
               Padding(
-              padding: EdgeInsets.fromLTRB(25, 15, 0, 0),
+              padding: EdgeInsets.fromLTRB(25, 15, 0, 15),
               child:
               Row(
                 children: [
@@ -155,52 +157,97 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     ],
                   ),
                 ],
-              ),
-              ),
-
+              ),),
+              Text("        My Goal",
+                      style: GoogleFonts.kanit(
+                        textStyle: const TextStyle(
+                          color: Colors.black87,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                ))),
+              Padding(padding: EdgeInsets.fromLTRB(25, 15, 0, 15),
+              child: 
+              Card(
+                child: Column(
+                  children: [
+                    Container(
+                      width: 350, // Specify the desired width
+                      child: ListTile(
+                        title: Text("Goal: $goal"),
+                        subtitle: Text("Experience: $exp"),
+                      ),
+                    )
+                  ],
+                ),
+              )),
+              Text("        Achievements",
+                      style: GoogleFonts.kanit(
+                        textStyle: const TextStyle(
+                          color: Colors.black87,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ))),
+              Padding(padding: EdgeInsets.fromLTRB(25, 15, 0, 15),
+              child:
               Row(
                 children: [
-                  
-
-                  Text(
-                    '          $age years old',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey,
-                    ),
-                  ),
-                  const SizedBox(width: 40),
-                  Text(
-                    'Goal: $goal',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey,
+                  Container(
+                    height: 100, // Specify the desired height for scrolling
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          ProfileRunWidget(1, "test"),
+                          ProfileRunWidget(1, "test"),
+                          ProfileRunWidget(1, "test"),
+                          //ProfileRunWidget(1, "test"),
+                          //ProfileRunWidget(1, "test"),
+                        ],
+                      ),
                     ),
                   ),
                 ],
-              ),
-              const SizedBox(height: 10),
-              Center(
-                child: ElevatedButton(
-                  onPressed: () {
-                    // TODO: Implement edit profile functionality
-                  },
-                  child: const Text(
-                    'Edit Profile',
-                    style: TextStyle(fontSize: 12),
+              ),),
+              Padding(padding: EdgeInsets.fromLTRB(0, 15, 0, 0),
+              child: 
+              Text("        Campaigns Completed",
+                      style: GoogleFonts.kanit(
+                        textStyle: const TextStyle(
+                          color: Colors.black87,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        )))),
+              Padding(
+              padding: EdgeInsets.fromLTRB(25, 15, 0, 15),
+              child:
+              Row(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Row(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(right: 0),
+                            child: ProfileRunWidget(num_of_runs, 'Activities'),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 20),
+                            child: ProfileRunWidget(total_km, 'KM'),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 20),
+                            child: ProfileRunWidget(20, 'Hours'),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              Center(
-                child: Text(
-                  '$num_of_runs runs completed',
-                  style: const TextStyle(
-                    fontSize: 24,
-                    color: Colors.black,
-                  ),
-                ),
-              ),
+                ],
+              ),),
+
+
+
             ],
           ),
         ]),

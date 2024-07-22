@@ -16,55 +16,6 @@ class ChangeProfileImage extends StatelessWidget {
   Future<void> _uploadImage() async {
       final picker = ImagePicker();
       final pickedImage = await picker.pickImage(source: ImageSource.gallery);
-
-      // String? imageString;
-      //   // Take a snapshot of the map
-      //   File? imageFile;
-      //   if (pickedImage != null) {
-      //     // Get the path to the app's temporary directory
-          
-
-      //     // ...
-
-      //     final Directory tempDir = await getTemporaryDirectory();
-      //     final String tempPath = tempDir.path;
-      //     // Compress the image
-      //     final Uint8List compressedImage =
-      //         await FlutterImageCompress.compressWithList(
-      //       pickedImage as Uint8List,
-      //       minWidth: 600,
-      //       minHeight: 800,
-      //       quality: 88,
-      //     );
-
-      //     // Write the image to a file
-      //     imageFile = File('$tempPath/temp.png');
-      //     await imageFile.writeAsBytes(compressedImage, flush: true);
-
-      //     if (imageFile != null) {
-      //       // Read the image file as a list of bytes
-      //       final bytes = await imageFile.readAsBytes();
-
-      //       // Encode the bytes in Base64 and create a data URL
-      //       imageString = base64Encode(bytes);
-      //     }
-      //   }
-      //   final user = FirebaseAuth.instance.currentUser;
-      //   final databaseReference = FirebaseDatabase.instance.reference();
-      //   print("joe mama");
-      //   print(user!.uid);
-        
-      //   await databaseReference.child('profiles').child(user!.uid).update({
-      //     'profile_image': imageString,
-      //   });
-
-      //   print("jojojojo: $imageString");
-  
-
-
-
-
-
       if (pickedImage != null) {
         final imageBytes = await pickedImage.readAsBytes();
         Uint8List compressImage(Uint8List imageBytes) {
