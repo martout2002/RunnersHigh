@@ -1,7 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:runners_high/popup/changeProfileImage.dart';
+import 'package:runners_high/widgets/profileRunWidget.dart';
 
 class UserProfilePage extends StatefulWidget {
   const UserProfilePage({super.key});
@@ -18,7 +22,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
   var age = 0;
   var exp = "err";
   var goal = "err";
-  var total_km = 0.0;
+  var total_km = 0;
+  var profileImage = "";
 
   // DatabaseReference? ref;
 
@@ -36,7 +41,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
             age = data['age'];
             exp = data['experience'];
             goal = data['goal'];
-            total_km = double.parse(data['total_distance'].toStringAsFixed(2));
+            if (data['profile_image'] != null) {
+              profileImage = data['profile_image'];
+            }
+            total_km = data['total_distance'].toInt();
           });
         } else {
           print("No user data available");
@@ -44,6 +52,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
       });
     }
   }
+
+
 
   @override
   void initState() {
@@ -67,23 +77,38 @@ class _UserProfilePageState extends State<UserProfilePage> {
             children: [
               Row(
                 children: [
-                  const Padding(
+                  Padding(
                       padding: EdgeInsets.fromLTRB(40, 0, 0, 0),
-                      child: CircleAvatar(
-                        foregroundImage: AssetImage('assets/images/pfp.jpg'),
-                        radius: 50,
-                      )),
+                      child: GestureDetector(
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              return const ChangeProfileImage();
+                            },
+                          );
+                        },
+                        child: CircleAvatar(
+                          foregroundImage: profileImage == ""
+                            ? const AssetImage('assets/images/pfp.jpg')
+                            : MemoryImage(base64Decode(profileImage)),
+                          radius: 50,
+                        ),
+                      ),
+                  ),
                   const SizedBox(width: 40),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Display Name here
                       Text(
                         name,
                         style: const TextStyle(
-                          fontSize: 24,
+                          fontSize: 32,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
+                      // Display total km ran here
                       Text(
                         "$total_km km",
                         style: const TextStyle(
@@ -96,8 +121,47 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 ],
               ),
               const SizedBox(width: 40, height: 15),
+              Text("        My Stats",
+                      style: GoogleFonts.kanit(
+                        textStyle: const TextStyle(
+                          color: Colors.black87,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ))),
+              Padding(
+              padding: EdgeInsets.fromLTRB(25, 15, 0, 0),
+              child:
               Row(
                 children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Row(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(right: 0),
+                            child: ProfileRunWidget(num_of_runs, 'Activities'),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 20),
+                            child: ProfileRunWidget(total_km, 'KM'),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 20),
+                            child: ProfileRunWidget(20, 'Hours'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              ),
+
+              Row(
+                children: [
+                  
+
                   Text(
                     '          $age years old',
                     style: const TextStyle(

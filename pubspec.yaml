@@ -48,6 +48,10 @@ dependencies:
   flutter_image_compress: ^1.1.0
   cloud_firestore: ^4.17.5
   mockito: ^5.4.4
+  image_picker: ^1.1.2
+  image_picker_android: ^0.8.4+4
+  
+  
 
 dev_dependencies:
   flutter_test:

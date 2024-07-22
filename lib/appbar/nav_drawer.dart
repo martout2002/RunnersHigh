@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:runners_high/home_page.dart';
+import 'package:runners_high/posts/feed.dart';
 import 'package:runners_high/running/running_missions.dart';
 import 'package:runners_high/social/friend_page.dart';
 import '../running/run_history_page.dart';
@@ -79,6 +80,17 @@ class NavDrawer extends StatelessWidget {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) => FriendPage(),
+                ),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.forum_sharp),
+            title: const Text('Feed'),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => FeedPage(),
                 ),
               );
             },
