@@ -106,6 +106,7 @@ class LoginPageState extends State<LoginPage> {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: const Text(
           "Runners' High",
@@ -139,12 +140,11 @@ class LoginPageState extends State<LoginPage> {
                 controller: _emailController,
                 decoration: const InputDecoration(
                   labelText: 'Email',
-                  border: OutlineInputBorder(),
+                  border:  OutlineInputBorder(),
                   filled: true,
-                  fillColor: Color(0xFFD3D3D3), // Light grey color
+                  fillColor:  Color(0xFFD3D3D3), // Light grey color
                   labelStyle: TextStyle(
-                      color:
-                          Colors.black), // Ensures label text is always black
+                      color: Colors.black), // Ensures label text is always black
                 ),
                 keyboardType: TextInputType.emailAddress,
                 style: const TextStyle(
@@ -159,8 +159,7 @@ class LoginPageState extends State<LoginPage> {
                   filled: true,
                   fillColor: const Color(0xFFD3D3D3), // Light grey color
                   labelStyle: const TextStyle(
-                      color:
-                          Colors.black), // Ensures label text is always black
+                      color: Colors.black), // Ensures label text is always black
                   suffixIcon: IconButton(
                     icon: Icon(
                         _obscureText ? Icons.visibility : Icons.visibility_off,
