@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:runners_high/running/run_tracking_page.dart';
 import 'services/gemini_api.dart';
 import 'widgets/progress_indicator.dart';
 import 'widgets/recommendation_widget.dart';
@@ -191,7 +192,7 @@ class HomePageState extends State<HomePage> {
               padding: const EdgeInsets.all(8.0),
               child: Text(
                 'Retrying to fetch recommendation... Attempt $_retryCount',
-                style: TextStyle(color: Colors.red),
+                style: const TextStyle(color: Colors.red),
               ),
             ),
           ProgressIndicatorWidget(runRecommendation: _runRecommendation),
@@ -226,8 +227,10 @@ class HomePageState extends State<HomePage> {
           Positioned(
             right: 16.0,
             bottom: 16.0,
-            child:
-                CustomFloatingActionButton(onToggleTheme: widget.onToggleTheme),
+            child: CustomFloatingActionButton(
+              onToggleTheme: widget.onToggleTheme,
+              pageBuilder: (context) => RunTrackingPage(onToggleTheme: widget.onToggleTheme),
+            ),
           ),
         ],
       ),
