@@ -1,8 +1,7 @@
 
+// ignore_for_file: file_names
+
 import 'dart:convert';
-import 'dart:io';
-import 'dart:typed_data';
-import 'package:path_provider/path_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +9,7 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ChangeProfileImage extends StatelessWidget {
+  // ignore: use_key_in_widget_constructors
   const ChangeProfileImage({Key? key});
 
 
@@ -18,12 +18,6 @@ class ChangeProfileImage extends StatelessWidget {
       final pickedImage = await picker.pickImage(source: ImageSource.gallery);
       if (pickedImage != null) {
         final imageBytes = await pickedImage.readAsBytes();
-        Uint8List compressImage(Uint8List imageBytes) {
-          // Add your compression logic here
-          // Example: Use image compression libraries like flutter_image_compress
-          // to compress the imageBytes
-          return imageBytes;
-        }
         
         final compressedImageBytes = await FlutterImageCompress.compressWithList(
             imageBytes,
@@ -37,9 +31,8 @@ class ChangeProfileImage extends StatelessWidget {
         // Store the encodedImageString in Firebase
         // ignore: deprecated_member_use
         final user = FirebaseAuth.instance.currentUser;
+        // ignore: deprecated_member_use
         final databaseReference = FirebaseDatabase.instance.reference();
-        print("joe mama");
-        print(user!.uid);
         
         await databaseReference.child('profiles').child(user!.uid).update({
           'profile_image': encodedImageString,
@@ -62,25 +55,25 @@ class ChangeProfileImage extends StatelessWidget {
   
 
     return AlertDialog(
-      title: Text('Change Profile Image'),
-      content: Text('Here you can change your profile image.'),
+      title: const Text('Change Profile Image'),
+      content: const Text('Here you can change your profile image.'),
       actions: [
         TextButton(
-          child: Text('Cancel'),
+          child: const Text('Cancel'),
           onPressed: () {
             Navigator.of(context).pop();
           },
         ),
         TextButton(
-          child: Text('Save'),
+          child: const Text('Save'),
           onPressed: () {
             // Add logic to save the new profile image
             Navigator.of(context).pop();
           },
         ),
         TextButton(
-          child: Text('Upload Image'),
           onPressed: _uploadImage,
+          child: const Text('Upload Image'),
         ),
       ],
     );

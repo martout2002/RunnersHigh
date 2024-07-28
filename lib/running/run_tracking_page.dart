@@ -11,6 +11,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:runners_high/running/checkAchievements.dart';
 
 class RunTrackingPage extends StatefulWidget {
   final VoidCallback onToggleTheme;
@@ -45,10 +46,14 @@ class RunTrackingPageState extends State<RunTrackingPage> {
   String campaignId = "";
   var mission = "";
   var campaignLength = 0;
+  var userAchievements = <String>[];
+  var userCompletedCampaigns;
 
   late StreamSubscription _missionSubscription;
   late StreamSubscription _campaignSubscription;
   late StreamSubscription kmListener;
+
+  AchievementChecker achievementChecker = AchievementChecker();
 
   @override
   void initState() {
@@ -83,7 +88,24 @@ class RunTrackingPageState extends State<RunTrackingPage> {
   void _initializeRunData() {
     if (_user != null) {
       _runRef = FirebaseDatabase.instance.ref().child('runs').child(_user!.uid);
+      final user = FirebaseDatabase.instance.ref().child('profile').child(_user!.uid);
+      user.onValue.listen((event) {
+        if (event.snapshot.value != null) {
+          final userData = Map<String, dynamic>.from(event.snapshot.value as Map);
+          if (userData['achievements'] != null) {
+            userAchievements = userData['achievements'];
+          } else {
+            print("obv it dont exists dog");
+            userAchievements ??= <String>[];
+          }
+        } else {
+          userAchievements ??= <String>[];
+        }
+      });
     }
+
+    print("users achievements: $userAchievements");
+  
   }
 
   void _accessCurrentMissionData() {
@@ -131,18 +153,12 @@ class RunTrackingPageState extends State<RunTrackingPage> {
       final eventValue = event.snapshot.value;
       if (eventValue != null) {
         final data = Map<String, dynamic>.from(eventValue as Map);
-        print("data inside _reselect method: $data");
-        print("num of runs: ${data['num_of_runs']}");
         setState(() {
           length = data['num_of_runs'];
         });
 
         if (mounted) {
-          print("This is the missionID: $missionId");
           int mission_as_int = int.parse(missionId.substring(1));
-          print("id after parse: $mission_as_int");
-          print("checking length now: $length");
-          print("is mission less than length? : ${mission_as_int < data['num_of_runs']}");
           if (mission_as_int < data['num_of_runs']) {
             _setCurrentMission("m${mission_as_int + 1}");
           } else {
@@ -174,9 +190,8 @@ class RunTrackingPageState extends State<RunTrackingPage> {
   }
 
   void _checkCompletedMission() {
-    print("Distance clocked   $_distance");
-    print("Km required   $kmRequired");
     if (_distance >= kmRequired) {
+      print("mission completed!");
       if (mission != null || mission != 'null') {
         _reSelectCurrentMission(campaignId, mission);
         _updateUserCompletedMissions(mission);
@@ -186,9 +201,6 @@ class RunTrackingPageState extends State<RunTrackingPage> {
   }
 
   void _updateUserCompletedMissions(String mission) {
-    print("updating completed missions");
-    String fuckwit = campaignId.toString();
-    print("this is fuckwit: $campaignId");
     var completedList = [];
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -217,6 +229,9 @@ class RunTrackingPageState extends State<RunTrackingPage> {
               }
               
             }
+          } else {
+            final outgoing_list = {campaignId: {mission: " "}};
+            ref.child('completedMissions').set(outgoing_list);
           }
         }
       }, onError: (error) {
@@ -238,17 +253,12 @@ class RunTrackingPageState extends State<RunTrackingPage> {
       final eventValue = event.snapshot.value;
       if (eventValue != null) {
         final data = Map<dynamic, dynamic>.from(eventValue as Map);
-        print("debugging data");
-        print("data is here: $data");
         //print("km is here: ${data['km']}");
         if (data['km'] != null) {
-          print("moutning check");
           if (mounted) {
-            print("here it is indeed mounted");
             setState(() {
               kmRequired = data['km'].toDouble();
             });
-            print("setting state of kmRequired bruh");
           }
         }
       }
@@ -383,6 +393,100 @@ class RunTrackingPageState extends State<RunTrackingPage> {
       });
     }
   }
+  Future<void> updateAchievements() async {
+    if (userAchievements != null) {
+      final ref = FirebaseDatabase.instance.ref().child('profiles');
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        ref.child(user.uid).update({
+            'achievements': Map.fromIterable(userAchievements, key: (item) => item, value: (_) => true),
+        });
+      }
+    } 
+  }
+
+  Future<void> completedCampaign(String cName) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final ref = FirebaseDatabase.instance.ref().child('profiles').child(user.uid);
+      ref.onValue.listen((event) {
+        if (event.snapshot.value != null) {
+          final data = Map<String, dynamic>.from(event.snapshot.value as Map);
+          final completedData = data['completedCampaigns'];
+          if (completedData == null) {
+            // just upload 
+            ref.child(user.uid).update({
+              'completedCampaigns': {cName : cName},
+            });
+
+          } else {
+            // parse data
+            userCompletedCampaigns = completedData.keys.toList();
+            userCompletedCampaigns.add(cName);
+            ref.child(user.uid).update({
+              'completedCampaigns': Map.fromIterable(userCompletedCampaigns, key: (item) => item, value: (_) => cName),
+            });
+          }
+          
+        }
+      });
+    }
+  }
+
+  Future<void> checkCampaigns() async {
+
+
+
+    if (campaignId == 'C1' && mission == 'm5') {
+      completedCampaign('C1');
+    } else if (campaignId == 'C2' && mission == 'm8') { 
+      completedCampaign('C2');
+    } else if (campaignId == 'C3' && mission == 'm15'){
+      completedCampaign('C3');
+
+    }
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final ref =
+          FirebaseDatabase.instance.ref().child('profiles').child(user.uid);
+      ref.onValue.listen((event) {
+        if (event.snapshot.value != null) {
+          final data = Map<String, dynamic>.from(event.snapshot.value as Map);
+          if (data['completedMissions'] != null) {
+            if (data['completedMissions'][campaignId] != null) {
+              setState(() {
+                _completedMission = true;
+              });
+            }
+          }
+        }
+      });
+    }
+  }
+
+  Future<void> checkAchievements(double distance) async {
+    if (userAchievements != null) {
+      if (distance >= 1 && !userAchievements.contains('1km')) {
+        print('it hit 1km');
+        userAchievements.add('1km');
+      }
+      if (distance >= 5 && !userAchievements.contains('5km')) {
+        userAchievements.add('5km');
+      }
+      if (distance >= 10 && !userAchievements.contains('10km')) {
+        userAchievements.add('10km');
+      }
+      if (distance >= 21 && !userAchievements.contains('21km')) {
+        userAchievements.add('21km');
+      }
+      print("new achievements meow: $userAchievements");
+      await updateAchievements();
+    } else {
+      print("accc error");
+    }
+  }
+
+
 
   Future<void> _saveRun() async {
     if (_lastPosition != null && _mapController != null) {
@@ -447,6 +551,8 @@ class RunTrackingPageState extends State<RunTrackingPage> {
           'timestamp': DateTime.now().toIso8601String(),
           'image': imageString,
         };
+        checkAchievements(_distance);
+        //achievementChecker.checkAchievements(_distance);
         _runRef?.push().set(run);
       }
       if (mounted) {

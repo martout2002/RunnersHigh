@@ -1,4 +1,5 @@
-import 'dart:async';
+// ignore_for_file: file_names
+
 import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -7,7 +8,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:runners_high/popup/changeProfileImage.dart';
 import 'package:runners_high/widgets/achievement.dart';
 import 'package:runners_high/widgets/profileRunWidget.dart';
-import 'package:runners_high/widgets/achievement.dart';
 
 class UserProfilePage extends StatefulWidget {
   const UserProfilePage({super.key});
@@ -15,17 +15,22 @@ class UserProfilePage extends StatefulWidget {
   //final DatabaseReference _userRef = FirebaseDatabase.instance.reference().child('users');
 
   @override
+  // ignore: library_private_types_in_public_api
   _UserProfilePageState createState() => _UserProfilePageState();
 }
 
 class _UserProfilePageState extends State<UserProfilePage> {
   var name = "";
+  // ignore: non_constant_identifier_names
   var num_of_runs = 0;
   var age = 0;
   var exp = "err";
   var goal = "err";
+  // ignore: non_constant_identifier_names
   var total_km = 0;
   var profileImage = "";
+  late var achievementsList;
+  late var completedCampaigns;
 
   // DatabaseReference? ref;
 
@@ -46,11 +51,14 @@ class _UserProfilePageState extends State<UserProfilePage> {
             if (data['profile_image'] != null) {
               profileImage = data['profile_image'];
             }
+            final userMap = data['achievements'];
+            achievementsList = userMap.keys.toList();
+            final userMappers = data['completedCampaign'];
+            completedCampaigns = userMappers.keys.toList();
+            
             total_km = data['total_distance'].toInt();
           });
-        } else {
-          print("No user data available");
-        }
+        } 
       });
     }
   }
@@ -80,7 +88,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   Row(
                     children: [
                       Padding(
-                        padding: EdgeInsets.fromLTRB(40, 0, 0, 0),
+                        padding: const EdgeInsets.fromLTRB(40, 0, 0, 0),
                         child: GestureDetector(
                           onTap: () {
                             showDialog(
@@ -134,7 +142,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     ),
                   ),
                   Padding(
-                    padding: EdgeInsets.fromLTRB(25, 15, 0, 15),
+                    padding: const EdgeInsets.fromLTRB(25, 15, 0, 15),
                     child: Row(
                       children: [
                         Row(
@@ -173,11 +181,11 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     ),
                   ),
                   Padding(
-                    padding: EdgeInsets.fromLTRB(25, 10, 0, 25),
+                    padding: const EdgeInsets.fromLTRB(25, 10, 0, 25),
                     child: Card(
                       child: Column(
                         children: [
-                          Container(
+                          SizedBox(
                             height: 60,
                             width: 350, // Specify the desired width
                             child: Flexible(
@@ -207,24 +215,32 @@ class _UserProfilePageState extends State<UserProfilePage> {
                       ),
                     ),
                   ),
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.fromLTRB(25, 15, 0, 15),
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
                         children: [
-                          AchievementCard(
+                          const AchievementCard(
                               imagePath: "best.png", text: "Best Run"),
-                          AchievementCard(imagePath: "1km.png", text: "1 KM"),
-                          AchievementCard(imagePath: "5km.png", text: "5 KM"),
-                          AchievementCard(imagePath: "10km.png", text: "10 KM"),
-                          AchievementCard(imagePath: "21km.png", text: "21 KM"),
+                          AchievementCard(imagePath: achievementsList.contains("1km") ? "1km.png" : 
+                          "!1km.png", text: achievementsList.contains("1km") ? "1km" : 
+                          "Not Yet"),
+                          AchievementCard(imagePath: achievementsList.contains("5km") ? "5km.png" : 
+                          "!5km.png", text: achievementsList.contains("5km") ? "5km" : 
+                          "Not Yet"),
+                          AchievementCard(imagePath: achievementsList.contains("10km") ? "10km.png" : 
+                          "!10km.png", text: achievementsList.contains("10km") ? "10km" : 
+                          "Not Yet"),
+                          AchievementCard(imagePath: achievementsList.contains("21km") ? "21km.png" : 
+                          "!21km.png", text: achievementsList.contains("21km") ? "21km" : 
+                          "Not Yet"),
                         ],
                       ),
                     ),
                   ),
                   Padding(
-                    padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
+                    padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
                     child: Text(
                       "        Campaigns Completed",
                       style: GoogleFonts.kanit(
@@ -236,19 +252,19 @@ class _UserProfilePageState extends State<UserProfilePage> {
                       ),
                     ),
                   ),
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.fromLTRB(25, 15, 0, 15),
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
                         children: [
+                          AchievementCard(imagePath: completedCampaigns.contains("C1") ? "zombie.png" : "!zombie.png", 
+                          text: completedCampaigns.contains("C1") ? "Dead Run" : "Not Yet"),
                           AchievementCard(
-                              imagePath: "zombie.png", text: "Dead Run"),
+                              imagePath: completedCampaigns.contains("C2") ? "sci.png" : "!sci.png", text: completedCampaigns.contains("C2") ? "Quantum Escape" : "Not Yet"),
                           AchievementCard(
-                              imagePath: "sci.png", text: "Quantum Escape"),
-                          AchievementCard(
-                              imagePath: "dragon.png",
-                              text: "Tales of Fantasia"),
+                              imagePath: completedCampaigns.contains("C3") ? "dragon.png" : "!dragon.png", text: completedCampaigns.contains("C3") ? "Tales of Fantasia" : "Not Yet",
+                              ),
                         ],
                       ),
                     ),
