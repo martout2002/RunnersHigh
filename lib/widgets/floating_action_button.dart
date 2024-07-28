@@ -3,9 +3,13 @@ import '../running/run_tracking_page.dart';
 
 class CustomFloatingActionButton extends StatelessWidget {
   final VoidCallback onToggleTheme;
+  final WidgetBuilder pageBuilder;
 
-  const CustomFloatingActionButton({Key? key, required this.onToggleTheme})
-      : super(key: key);
+  const CustomFloatingActionButton({
+    Key? key,
+    required this.onToggleTheme,
+    required this.pageBuilder,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +18,7 @@ class CustomFloatingActionButton extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => RunTrackingPage(onToggleTheme: onToggleTheme),
+            builder: pageBuilder,
           ),
         );
       },
