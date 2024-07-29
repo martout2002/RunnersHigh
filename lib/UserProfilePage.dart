@@ -29,8 +29,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
   // ignore: non_constant_identifier_names
   var total_km = 0;
   var profileImage = "";
-  late var achievementsList;
-  late var completedCampaigns;
+  var achievementsList = [];
+  var completedCampaigns = [];
 
   // DatabaseReference? ref;
 
@@ -52,9 +52,15 @@ class _UserProfilePageState extends State<UserProfilePage> {
               profileImage = data['profile_image'];
             }
             final userMap = data['achievements'];
-            achievementsList = userMap.keys.toList();
+            if (userMap != null) {
+              achievementsList = userMap.keys.toList();
+            }
+             
             final userMappers = data['completedCampaign'];
-            completedCampaigns = userMappers.keys.toList();
+            if (userMappers != null) {
+              completedCampaigns = userMappers.keys.toList();
+            }
+            
             
             total_km = data['total_distance'].toInt();
           });
